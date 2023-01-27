@@ -1,0 +1,3 @@
+C:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна робота Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/cmake-build-debug/CMakeFiles/mxasm.dir
+C:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна робота Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна робота Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/cmake-build-debug/CMakeFiles/rebuild_cache.dir

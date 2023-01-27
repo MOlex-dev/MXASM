@@ -1,0 +1,60 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "mxasm",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "mxasm::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mxasm-Debug-debbcb9e14a7f01272df.json",
+					"name" : "mxasm",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/RavenFox/Desktop/LNTU/_\u041a\u0443\u0440\u0441\u043e\u0432\u0456/\u041a\u0432\u0430\u043b\u0456\u0444\u0456\u043a\u0430\u0446\u0456\u0439\u043d\u0430 \u0440\u043e\u0431\u043e\u0442\u0430 \u0411\u0430\u043a\u0430\u043b\u0430\u0432\u0440/\u043f\u0440\u043e\u0433_\u0431\u0430\u043a\u0430\u043b\u0430\u0432\u0440_\u041c\u0456\u0449\u0443\u043a_\u041e\u0421_\u0456\u043f\u043741_2023/mxasm/cmake-build-debug",
+		"source" : "C:/Users/RavenFox/Desktop/LNTU/_\u041a\u0443\u0440\u0441\u043e\u0432\u0456/\u041a\u0432\u0430\u043b\u0456\u0444\u0456\u043a\u0430\u0446\u0456\u0439\u043d\u0430 \u0440\u043e\u0431\u043e\u0442\u0430 \u0411\u0430\u043a\u0430\u043b\u0430\u0432\u0440/\u043f\u0440\u043e\u0433_\u0431\u0430\u043a\u0430\u043b\u0430\u0432\u0440_\u041c\u0456\u0449\u0443\u043a_\u041e\u0421_\u0456\u043f\u043741_2023/mxasm"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}
