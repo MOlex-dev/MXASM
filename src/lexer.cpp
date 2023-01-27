@@ -11,7 +11,10 @@
 
 using namespace mxasm;
 
+lexer::lexer(std::list<std::pair<std::size_t, std::string>>) noexcept
+{
 
+}
 
 lexer::
 lexer(const char *const file) noexcept
@@ -24,8 +27,8 @@ tokenize()
 {
     std::string exception_msg{};
     auto token = next();
-    while (token.is_not(lexer_token::lt_kind::END_OF_FILE)) {
-        if (token.is(lexer_token::lt_kind::UNEXPECTED))
+    while (token.is_not(lexer_token::token_kind::END_OF_FILE)) {
+        if (token.is(lexer_token::token_kind::UNEXPECTED))
             exception_msg.append(std::string("Unexpected token: ") + token.lexeme()  + '\n');
         else
             m_tokens.push_back(token);
@@ -44,9 +47,9 @@ tokens() noexcept
 lexer_token        lexer::                // todo: add negative numbers support
 next() noexcept
 {
-    if (peek() == '\0') return lexer_token(lexer_token::lt_kind::END_OF_FILE, m_file, 1);
+    if (peek() == '\0') return lexer_token(lexer_token::token_kind::END_OF_FILE, m_file, 1);
     while (is_space(peek())) lexer::get();
-    if (peek() == '\0') return lexer_token(lexer_token::lt_kind::END_OF_FILE, m_file, 1);
+    if (peek() == '\0') return lexer_token(lexer_token::token_kind::END_OF_FILE, m_file, 1);
 
     if (is_digit(peek())) return decimal_constant();
     if (is_identifier_char(peek())) return identifier();
@@ -59,9 +62,9 @@ next() noexcept
         case '\"': return string();
         case ';': return comment();
 
-        case ',': return atom(lexer_token::lt_kind::COMMA);
-        case '[': return atom(lexer_token::lt_kind::LEFT_SQUARE);
-        case ']': return atom(lexer_token::lt_kind::RIGHT_SQUARE);
+        case ',': return atom(lexer_token::token_kind::COMMA);
+        case '[': return atom(lexer_token::token_kind::LEFT_SQUARE);
+        case ']': return atom(lexer_token::token_kind::RIGHT_SQUARE);
     }
     return unexpected();
 }
@@ -73,7 +76,7 @@ decimal_constant() noexcept
     get();
     while (is_digit(peek())) get();
 
-    auto token = lexer_token(lexer_token::lt_kind::DECIMAL_CONSTANT, start, m_file);
+    auto token = lexer_token(lexer_token::token_kind::DECIMAL_CONSTANT, start, m_file);
     if (token.lexeme().length() == 1 and token.lexeme()[0] == '-') {
         return unexpected(token.lexeme());
     }
@@ -87,7 +90,7 @@ identifier() noexcept
     get();
     while (is_identifier_char(peek())) get();
 
-    auto token = lexer_token(lexer_token::lt_kind::IDENTIFIER, start, m_file);
+    auto token = lexer_token(lexer_token::token_kind::IDENTIFIER, start, m_file);
     auto token_lexeme = token.lexeme();
 
     if (std::count(token_lexeme.begin(), token_lexeme.end(), '_') == token_lexeme.length())
@@ -96,7 +99,7 @@ identifier() noexcept
 }
 
 lexer_token        lexer::
-atom(const lexer_token::lt_kind kind) noexcept
+atom(const lexer_token::token_kind kind) noexcept
 { return lexer_token(kind, m_file++, 1); }
 
 lexer_token        lexer::
@@ -105,12 +108,12 @@ unexpected() noexcept
     const char *const start = m_file;
     get();
     while (not is_space_or_file_end(peek())) get();
-    return lexer_token(lexer_token::lt_kind::UNEXPECTED, start, m_file);
+    return lexer_token(lexer_token::token_kind::UNEXPECTED, start, m_file);
 }
 
 lexer_token        lexer::
 unexpected(const std::string lexeme) noexcept
-{ return lexer_token(lexer_token::lt_kind::UNEXPECTED, lexeme); }
+{ return lexer_token(lexer_token::token_kind::UNEXPECTED, lexeme); }
 
 lexer_token        lexer::
 comment() noexcept
@@ -118,7 +121,7 @@ comment() noexcept
     const char *const start = m_file;
     get();
     while (peek() != '\n' and peek() != '\0') get();
-    return lexer_token(lexer_token::lt_kind::COMMENT, start, m_file);
+    return lexer_token(lexer_token::token_kind::COMMENT, start, m_file);
 }
 
 lexer_token        lexer::
@@ -130,7 +133,7 @@ string() noexcept
         if (peek() == '\0') { return unexpected(std::string(start)); }
         get();
     }
-    return lexer_token(lexer_token::lt_kind::STRING, start, ++m_file);
+    return lexer_token(lexer_token::token_kind::STRING, start, ++m_file);
 }
 
 lexer_token        lexer::
@@ -140,7 +143,7 @@ register_name() noexcept
     get();
     while (is_letter(peek())) get();
 
-    auto token = lexer_token(lexer_token::lt_kind::REGISTER, start, m_file);
+    auto token = lexer_token(lexer_token::token_kind::REGISTER, start, m_file);
     return token.lexeme().length() == 1 ? unexpected(token.lexeme()) : token;
 }
 
@@ -154,7 +157,7 @@ hex_constant() noexcept
 
     while (is_hex_digit(peek())) get();
 
-    auto token = lexer_token(lexer_token::lt_kind::HEXADECIMAL_CONSTANT, start, m_file);
+    auto token = lexer_token(lexer_token::token_kind::HEXADECIMAL_CONSTANT, start, m_file);
     auto token_lexeme = token.lexeme();
 
     if (token_lexeme.length() == 1) return unexpected(token_lexeme);
@@ -171,7 +174,7 @@ label() noexcept
 
     if (peek() == ':') get();
 
-    auto token = lexer_token(lexer_token::lt_kind::LABEL, start, m_file);
+    auto token = lexer_token(lexer_token::token_kind::LABEL, start, m_file);
     auto token_lexeme = token.lexeme();
 
     if (token_lexeme.length() == 1) return unexpected(token.lexeme());

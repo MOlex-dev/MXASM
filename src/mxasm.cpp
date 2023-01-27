@@ -1,75 +1,59 @@
+/*-------------------------------*
+ |        MOlex Assembler        |
+ |       Author: MOlex-dev       |
+ *-------------------------------*/
+
 #include <iostream>
-#include <fstream>
+#include <iomanip>
+
+#include "../include/util.hpp"
 #include "../include/lexer.hpp"
 
-std::string open_program_code(const std::string path);
+//#define DEBUG_INPUT
+
+using namespace mxasm;
+
+
 int main(int argc, char **argv)
 {
     try {
-        std::string program_code;
+        // Check arguments
+        if (argc == 1) throw std::invalid_argument("No input file!\n");
 
-        // Read source code from file
-        if (argc == 1) throw std::invalid_argument("Wrong source code file name or extension. Should be [name].mxasm\n");
-        program_code = open_program_code(argv[1]);
+        std::string source_file_path {argv[1]};
+        validate_source_file_path(source_file_path);
 
+        auto source_code = open_source_code(source_file_path);
 
-#ifdef DEBUG_SRC   // Print source code
-        std::cout << program_code << std::endl;
+#ifdef DEBUG_INPUT
+        for (const auto &[line_num, line] : source_code) {
+            std::cout << std::setw(5) << line_num << ':';
+            std::cout << ' ' << line << '\n';
+        }
 #endif
+
+        // Using lexer
+        lexer tokenizer(source_code);
+
+
+
+
+
 
 
         // Using lexer
-        mxasm::lexer source_lexer(program_code.c_str());
-        source_lexer.tokenize();
+       // source_lexer.tokenize();
 
-        auto lexer_tokens = source_lexer.tokens();
-
-
-#ifdef DEBUG_LEX
-        for (const auto &e : lexer_tokens) {
-            std::cout << e.lexeme() << '\n';
-        }
-#endif
+     //   auto lexer_tokens = source_lexer.tokens();
 
 
 
 
 
-#ifdef DEBUG_PRS
-        for (const auto &e : lexer_tokens) {
-            std::cout << e.lexeme() << '\n';
-        }
-#endif
-
-
-
-
-
-
-    } catch (const std::exception &e) {
-        std::cout << "ERROR!" << '\n' << e.what() << std::endl;
+    } catch (const std::exception &ex) {
+        std::cerr << "ERROR!" << std::endl;
+        std::cerr << ex.what() << std::endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
-}
-
-
-
-std::string open_program_code(const std::string path)
-{
-
-    if (path.length() < 7 or path.substr(path.length() - 6) != ".mxasm")
-        throw std::invalid_argument("Wrong source code file name or extension. Should be [name].mxasm\n");
-
-    std::ifstream file_reader(path);
-    if (not file_reader.is_open())
-        throw std::ios_base::failure("Source code file opening error");
-
-    std::string buffer, result_str;
-
-    while (std::getline(file_reader, buffer)) {
-        result_str.append(buffer + '\n');
-    }
-
-    return std::move(result_str);
 }

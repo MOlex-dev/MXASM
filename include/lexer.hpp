@@ -18,6 +18,7 @@ namespace mxasm
     {
     public:
         explicit lexer(const char *file) noexcept;
+        explicit lexer(std::list<std::pair<std::size_t, std::string>>) noexcept;
 
         void                          tokenize();
         std::list<lexer_token>      &&tokens() noexcept;
@@ -29,7 +30,7 @@ namespace mxasm
         lexer_token next() noexcept;
         lexer_token decimal_constant() noexcept;
         lexer_token identifier() noexcept;
-        lexer_token atom(const lexer_token::lt_kind kind) noexcept;
+        lexer_token atom(const lexer_token::token_kind kind) noexcept;
         lexer_token unexpected() noexcept;
         lexer_token unexpected(const std::string lexeme) noexcept;
         lexer_token comment() noexcept;
