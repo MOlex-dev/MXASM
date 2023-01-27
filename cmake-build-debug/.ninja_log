@@ -1,0 +1,6 @@
+# ninja log v5
+3	429	6965548606007873	CMakeFiles/mxasm.dir/src/lexer.cpp.obj	26d850471a332cf0
+8	497	6965548606687826	CMakeFiles/mxasm.dir/src/lexer_token.cpp.obj	2f61d63cfc44dd03
+5	673	6965550171604543	CMakeFiles/mxasm.dir/src/lexer.cpp.obj	26d850471a332cf0
+3	570	6965550794519435	CMakeFiles/mxasm.dir/src/mxasm.cpp.obj	904055a0ca6d4e9f
+571	693	6965550795729428	mxasm.exe	76d335f489dc2ef2
