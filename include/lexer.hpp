@@ -40,6 +40,10 @@ namespace mxasm
         lexer_token identifier() noexcept;
         lexer_token unexpected(const std::string::const_iterator begin) noexcept;
         lexer_token unexpected(const std::string lexeme, std::size_t column) noexcept;
+        lexer_token hex_constant() noexcept;
+        lexer_token bin_constant() noexcept;
+        lexer_token octal_constant() noexcept;
+        lexer_token decimal_constant() noexcept;
 
 
         char        peek() const noexcept;
@@ -53,19 +57,15 @@ namespace mxasm
         bool is_digit(const char c) const noexcept;
         bool is_letter(const char c) const noexcept;
         bool is_identifier_char(const char c) const noexcept;
-
+        bool is_hex_digit(const char c) const noexcept;
+        bool is_bin_digit(const char c) const noexcept;
+        bool is_octal_digit(const char c) const noexcept;
 
     private:
         const char            *m_file = nullptr;
 
 
-        lexer_token decimal_constant() noexcept;
         lexer_token string() noexcept;
-        lexer_token register_name() noexcept;
-        lexer_token hex_constant() noexcept;
-
-        bool is_space_or_file_end(const char c) noexcept;
-        bool is_hex_digit(const char c) noexcept;
 
 
 

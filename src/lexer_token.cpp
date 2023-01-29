@@ -70,16 +70,20 @@ is_not(const lt_kind kind) const noexcept
 const std::map<lt_kind, std::string> lexer_token::
 kind_string
 {
-    { lt_kind::IDENTIFIER, "IDENTIFIER" },
-    { lt_kind::COMMENT,    "COMMENT" },
+    { lt_kind::IDENTIFIER,       "IDENTIFIER"          },
+    { lt_kind::COMMENT,          "COMMENT"             },
+    { lt_kind::DECIMAL_CONSTANT, "DECIMAL_CONSTANT"    },
+    { lt_kind::OCTAL_CONSTANT,   "OCTAL_CONSTANT"      },
+    { lt_kind::BINARY_CONSTANT,  "BINARY_CONSTANT"     },
+    { lt_kind::HEX_CONSTANT,     "HEXADECIMAL CONSTANT"},
+    { lt_kind::DIRECTIVE,        "DIRECTIVE"           },
 
 
-    { lt_kind::DIRECTIVE, "---DIRECTIVE"},
-
-
-
-    { lt_kind::COMMA, "COMMA" },
+    { lt_kind::COMMA,             "COMMA"             },
+    { lt_kind::HASH,              "HASH"              },
+    { lt_kind::LEFT_PARENTHESIS,  "LEFT_PARENTHESIS"  },
+    { lt_kind::RIGHT_PARENTHESIS, "RIGHT_PARENTHESIS" },
 
     { lt_kind::END_OF_LINE, "END OF LINE" },
-    { lt_kind::UNEXPECTED,  "UNEXPECTED" }
+    { lt_kind::UNEXPECTED,  "UNEXPECTED"  }
 };

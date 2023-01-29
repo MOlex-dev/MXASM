@@ -41,7 +41,7 @@ int main(int argc, char **argv)
         for (const auto &token : tokens) {
             std::cout << std::setw(6) << token.row() << ',';
             std::cout << std::setw(4) << token.column() << ':';
-            std::cout << std::setw(20) << token.kind_str() << ": ";
+            std::cout << std::setw(25) << token.kind_str() << ": ";
             std::cout << token.lexeme();
             std::cout << '\n';
         }

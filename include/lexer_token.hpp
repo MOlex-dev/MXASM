@@ -21,9 +21,17 @@ namespace mxasm
             // multichar
             IDENTIFIER,
             COMMENT,
+            DECIMAL_CONSTANT,
+            BINARY_CONSTANT,
+            OCTAL_CONSTANT,
+            HEX_CONSTANT,
+            DIRECTIVE,
 
             // atom
             COMMA,
+            HASH,
+            LEFT_PARENTHESIS,
+            RIGHT_PARENTHESIS,
 
             // control
             END_OF_LINE,
@@ -36,19 +44,14 @@ namespace mxasm
 
 
             // text
-            NUMBER,
-            DIRECTIVE,
             STRING,
 
             // atom
             ASTERISK,
             EQUALS,
-            HASH,
             DOLLAR,
             LESS,
             GREATER,
-            LEFT_PARENTHESIS,
-            RIGHT_PARENTHESIS
         };
 
         lexer_token(const lt_kind kind);
