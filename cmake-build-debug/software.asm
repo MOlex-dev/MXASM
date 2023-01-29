@@ -1,3 +1,4 @@
+* = $2000
 lda #$4 ; load 4 to accumulator
 jmp asz
 _start:

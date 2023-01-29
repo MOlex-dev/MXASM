@@ -83,6 +83,10 @@ kind_string
     { lt_kind::HASH,              "HASH"              },
     { lt_kind::LEFT_PARENTHESIS,  "LEFT_PARENTHESIS"  },
     { lt_kind::RIGHT_PARENTHESIS, "RIGHT_PARENTHESIS" },
+    { lt_kind::LESS,              "LESS"              },
+    { lt_kind::GREATER,           "GREATER"           },
+    { lt_kind::ASTERISK,          "ASTERISK"          },
+    { lt_kind::EQUALS,            "EQUALS"            },
 
     { lt_kind::END_OF_LINE, "END OF LINE" },
     { lt_kind::UNEXPECTED,  "UNEXPECTED"  }

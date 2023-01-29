@@ -33,18 +33,14 @@ namespace mxasm
             HASH,
             LEFT_PARENTHESIS,
             RIGHT_PARENTHESIS,
+            LESS,
+            GREATER,
+            ASTERISK,
+            EQUALS,
 
             // control
             END_OF_LINE,
             UNEXPECTED,
-
-
-// add $ - msg
-            // atom
-            ASTERISK,
-            EQUALS,
-            LESS,
-            GREATER,
         };
 
         lexer_token(const lt_kind kind);

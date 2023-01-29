@@ -77,6 +77,10 @@ next(const source_line &line) noexcept
         case '%' : return bin_constant();
         case '.' : return directive();
         case '\"': return string();
+        case '<' : return atom(lt_kind::LESS);
+        case '>' : return atom(lt_kind::GREATER);
+        case '*' : return atom(lt_kind::ASTERISK);
+        case '=' : return atom(lt_kind::EQUALS);
     }
     return unexpected(m_current_iter);
 }
