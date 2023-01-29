@@ -20,7 +20,7 @@ validate_source_file_path(const std::string path)
     }
 }
 
-std::list<std::pair<std::size_t, std::string>>   mxasm::
+source_listing   mxasm::
 open_source_code(const std::string file_path)
 {
     std::ifstream reader(file_path);
@@ -28,7 +28,7 @@ open_source_code(const std::string file_path)
         throw std::runtime_error("Source code file opening error!\n");
     }
 
-    std::list<std::pair<std::size_t, std::string>> source_code;
+    source_listing source_code;
     std::string buffer;
     std::size_t line_number {1};
 

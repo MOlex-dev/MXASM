@@ -1,6 +1,6 @@
 /*-------------------------------*
- |         MX  Assembler         |
- |          Lexer Token          |
+ |        MOlex Assembler        |
+ |             Lexer             |
  |                               |
  |       Author: MOlex-dev       |
  *-------------------------------*/
@@ -8,48 +8,78 @@
 #include "../include/lexer_token.hpp"
 
 using namespace mxasm;
-using lt_kind = lexer_token::token_kind;
+using lt_kind = lexer_token::lt_kind;
 
 
 
 lexer_token::
-lexer_token(const token_kind kind) noexcept
-        : m_kind{kind} {}
+lexer_token(const lt_kind kind) : lexer_token(kind, "", 0, 0) {}
 
 lexer_token::
-lexer_token(const token_kind kind, const std::string lexeme) noexcept
-        : m_kind{kind}, m_lexeme{std::move(lexeme)}{ }
-
-lexer_token::
-lexer_token(const token_kind kind, const char *const begin, std::size_t len) noexcept
-        : m_kind{kind}, m_lexeme{begin, len} {}
-
-lexer_token::
-lexer_token(const token_kind kind, const char *const begin, const char *const end) noexcept
-        : m_kind{kind}, m_lexeme(begin, std::distance(begin, end)) {}
+lexer_token(const lt_kind kind, const std::string lexeme, const std::size_t row, const std::size_t column)
+    : m_kind {kind}, m_lexeme {lexeme}, m_row {row}, m_column {column} {}
 
 
+std::size_t        lexer_token::
+row() const noexcept
+{ return m_row; }
+
+std::size_t        lexer_token::
+column() const noexcept
+{ return m_column; }
+
+std::string        lexer_token::
+lexeme() const noexcept
+{ return m_lexeme; }
 
 lt_kind            lexer_token::
 kind() const noexcept
 { return m_kind; }
 
+
 void               lexer_token::
-kind(const token_kind kind) noexcept
+row(const std::size_t row) noexcept
+{ m_row = row; }
+
+void               lexer_token::
+column(const std::size_t column) noexcept
+{ m_column = column; }
+
+void               lexer_token::
+lexeme(std::string lexeme) noexcept
+{ m_lexeme = std::move(lexeme); }
+
+void               lexer_token::
+kind(const lt_kind kind) noexcept
 { m_kind = kind; }
 
-bool               lexer_token::
-is(const token_kind kind) const noexcept
-{ return kind == m_kind; }
+std::string        lexer_token::
+kind_str() const noexcept
+{ return kind_string.at(m_kind); }
+
 
 bool               lexer_token::
-is_not(const token_kind kind) const noexcept
-{ return not is(kind); }
+is(const lt_kind kind) const noexcept
+{ return m_kind == kind; }
 
-std::string   lexer_token::
-lexeme() const noexcept
-{ return m_lexeme; }
+bool               lexer_token::
+is_not(const lt_kind kind) const noexcept
+{ return m_kind != kind; }
 
-void               lexer_token::
-lexeme(const std::string lex) noexcept
-{ m_lexeme = std::move(lex); }
+
+const std::map<lt_kind, std::string> lexer_token::
+kind_string
+{
+    { lt_kind::IDENTIFIER, "IDENTIFIER" },
+    { lt_kind::COMMENT,    "COMMENT" },
+
+
+    { lt_kind::DIRECTIVE, "---DIRECTIVE"},
+
+
+
+    { lt_kind::COMMA, "COMMA" },
+
+    { lt_kind::END_OF_LINE, "END OF LINE" },
+    { lt_kind::UNEXPECTED,  "UNEXPECTED" }
+};

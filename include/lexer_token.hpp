@@ -1,5 +1,5 @@
 /*-------------------------------*
- |         MX  Assembler         |
+ |        MOlex Assembler        |
  |          Lexer Token          |
  |                               |
  |       Author: MOlex-dev       |
@@ -8,67 +8,74 @@
 #pragma once
 
 #include <string>
+#include <map>
+
 
 namespace mxasm
 {
     class lexer_token
     {
     public:
-        enum class token_kind
+        enum class lt_kind
         {
-
-
-
-
-
-            // lexemes
+            // multichar
             IDENTIFIER,
-            REGISTER,
-            DECIMAL_CONSTANT,
-            HEXADECIMAL_CONSTANT,
-            STRING,
-            LABEL,
             COMMENT,
 
-            // atoms
+            // atom
             COMMA,
-            LEFT_SQUARE,
-            RIGHT_SQUARE,
 
             // control
-            END_OF_FILE,
-            UNEXPECTED
+            END_OF_LINE,
+            UNEXPECTED,
+
+
+// add $ - msg
 
 
 
 
+            // text
+            NUMBER,
+            DIRECTIVE,
+            STRING,
+
+            // atom
+            ASTERISK,
+            EQUALS,
+            HASH,
+            DOLLAR,
+            LESS,
+            GREATER,
+            LEFT_PARENTHESIS,
+            RIGHT_PARENTHESIS
         };
 
+        lexer_token(const lt_kind kind);
+        lexer_token(const lt_kind kind, const std::string lexeme, const std::size_t row, const std::size_t column);
 
 
 
-        explicit lexer_token(const token_kind kind) noexcept;
-        lexer_token(const token_kind kind, const std::string lexeme) noexcept;
-        lexer_token(const token_kind kind, const char *const begin, std::size_t len) noexcept;
-        lexer_token(const token_kind kind, const char *const begin, const char *const end) noexcept;
+        std::size_t row() const noexcept;
+        std::size_t column() const noexcept;
+        std::string lexeme() const noexcept;
+        lt_kind     kind() const noexcept;
+        std::string kind_str() const noexcept;
 
-        token_kind          kind() const noexcept;
-        void             kind(const token_kind kind) noexcept;
-        bool             is(const token_kind kind) const noexcept;
-        bool             is_not(const token_kind kind) const noexcept;
-        std::string      lexeme() const noexcept;
-        void             lexeme(const std::string lex) noexcept;
+        void row(const std::size_t row) noexcept;
+        void column(const std::size_t column) noexcept;
+        void lexeme(std::string lexeme) noexcept;
+        void kind(const lt_kind kind) noexcept;
 
-
+        bool is(const lt_kind kind) const noexcept;
+        bool is_not(const lt_kind kind) const noexcept;
 
     private:
+        std::size_t m_row;
+        std::size_t m_column;
+        std::string m_lexeme;
+        lt_kind     m_kind;
 
-
-
-        token_kind          m_kind{};
-        std::string      m_lexeme{};
-
-
-
+        const static std::map<lt_kind, std::string> kind_string;
     };
 }

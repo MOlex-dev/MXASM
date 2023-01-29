@@ -13,7 +13,8 @@
 namespace mxasm
 {
     typedef uint8_t byte;
+    typedef std::list<std::pair<std::size_t, std::string>> source_listing;
 
-    void validate_source_file_path(const std::string path);
-    std::list<std::pair<std::size_t, std::string>> open_source_code(const std::string file_path);
+    void           validate_source_file_path(const std::string path);
+    source_listing open_source_code(const std::string file_path);
 }
