@@ -1,6 +1,6 @@
 /*-------------------------------*
  |        MOlex Assembler        |
- |             Lexer             |
+ |          Lexer Token          |
  |                               |
  |       Author: MOlex-dev       |
  *-------------------------------*/

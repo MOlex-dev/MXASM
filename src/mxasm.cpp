@@ -8,6 +8,7 @@
 
 #include "../include/util.hpp"
 #include "../include/lexer.hpp"
+#include "../include/parser.hpp"
 
 //#define DEBUG_INPUT
 #define DEBUG_LEXER
@@ -46,6 +47,9 @@ int main(int argc, char **argv)
             std::cout << '\n';
         }
 #endif
+
+        parser a;
+
 
 
 

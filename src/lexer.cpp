@@ -1,5 +1,5 @@
 /*-------------------------------*
- |         MX  Assembler         |
+ |        MOlex Assembler        |
  |             Lexer             |
  |                               |
  |       Author: MOlex-dev       |
