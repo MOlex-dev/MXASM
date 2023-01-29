@@ -26,6 +26,7 @@ namespace mxasm
             OCTAL_CONSTANT,
             HEX_CONSTANT,
             DIRECTIVE,
+            STRING,
 
             // atom
             COMMA,
@@ -39,17 +40,9 @@ namespace mxasm
 
 
 // add $ - msg
-
-
-
-
-            // text
-            STRING,
-
             // atom
             ASTERISK,
             EQUALS,
-            DOLLAR,
             LESS,
             GREATER,
         };

@@ -77,7 +77,7 @@ kind_string
     { lt_kind::BINARY_CONSTANT,  "BINARY_CONSTANT"     },
     { lt_kind::HEX_CONSTANT,     "HEXADECIMAL CONSTANT"},
     { lt_kind::DIRECTIVE,        "DIRECTIVE"           },
-
+    { lt_kind::STRING,           "STRING"              },
 
     { lt_kind::COMMA,             "COMMA"             },
     { lt_kind::HASH,              "HASH"              },

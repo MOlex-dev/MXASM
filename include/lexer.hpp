@@ -45,12 +45,12 @@ namespace mxasm
         lexer_token octal_constant() noexcept;
         lexer_token decimal_constant() noexcept;
         lexer_token directive() noexcept;
+        lexer_token string() noexcept;
 
 
         char        peek() const noexcept;
         char        get() noexcept;
         std::size_t get_column(const std::string::const_iterator position) const noexcept;
-        std::size_t get_current_column() const noexcept;
 
 
         bool is_space(const char c) const noexcept;
@@ -61,14 +61,6 @@ namespace mxasm
         bool is_hex_digit(const char c) const noexcept;
         bool is_bin_digit(const char c) const noexcept;
         bool is_octal_digit(const char c) const noexcept;
-
-    private:
-        const char            *m_file = nullptr;
-
-
-        lexer_token string() noexcept;
-
-
-
+        bool is_string_symbol(const char c) const noexcept;
     };
 }
