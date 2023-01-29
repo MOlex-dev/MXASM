@@ -44,6 +44,7 @@ namespace mxasm
         lexer_token bin_constant() noexcept;
         lexer_token octal_constant() noexcept;
         lexer_token decimal_constant() noexcept;
+        lexer_token directive() noexcept;
 
 
         char        peek() const noexcept;

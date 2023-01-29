@@ -72,9 +72,10 @@ next(const source_line &line) noexcept
         case ',': return atom(lt_kind::COMMA);
         case '#': return atom(lt_kind::HASH);
         case '(': return atom(lt_kind::LEFT_PARENTHESIS);
-        case ')': return atom(lt_kind::RIGHT_PARENTHESIS); // TODO: WHITESPACE OR COMMA AFTER
+        case ')': return atom(lt_kind::RIGHT_PARENTHESIS);
         case '$': return hex_constant();
         case '%': return bin_constant();
+        case '.': return directive();
     }
 
 
@@ -88,7 +89,7 @@ next(const source_line &line) noexcept
 //        case '.': return label();
 //        case '\"': return string();
 
-    lexer_token token(lt_kind::DIRECTIVE, std::string(1, peek()), m_current_row, get_current_column());
+    lexer_token token(lt_kind::UNEXPECTED, std::string(1, peek()), m_current_row, get_current_column());
     ++m_current_iter;
     return token;
 }
@@ -226,6 +227,33 @@ decimal_constant() noexcept
     }
 
     return lexer_token(lt_kind::DECIMAL_CONSTANT, std::string(begin, m_current_iter), m_current_row, get_column(begin));
+}
+
+lexer_token        lexer::
+directive() noexcept
+{
+    const std::string::const_iterator begin = m_current_iter;
+    get();
+    while (is_identifier_char(peek())) get();
+
+    if (not (is_space(peek()) or is_end_of_line(peek()))) {
+        return unexpected(begin);
+    }
+
+    const std::string result_lexeme(begin, m_current_iter);
+    if (result_lexeme.length() == 1) {
+        return unexpected(result_lexeme, get_column(begin));
+    }
+
+    // Check for underscores
+    std::size_t underscores = std::count(result_lexeme.cbegin(), result_lexeme.cend(), '_');
+    std::size_t name_length = result_lexeme.length() - 1;
+
+    if (underscores == name_length) {
+        return unexpected(result_lexeme, get_column(begin));
+    }
+
+    return lexer_token(lt_kind::DIRECTIVE, result_lexeme, m_current_row, get_column(begin));
 }
 
 
