@@ -34,9 +34,11 @@ int main(int argc, char **argv)
         }
 #endif
 
+
         // Using lexer
         lexer tokenizer(source_code);
         const auto &tokens = tokenizer.tokens();
+
 
 #ifdef DEBUG_LEXER
         for (const auto &token : tokens) {
@@ -48,7 +50,9 @@ int main(int argc, char **argv)
         }
 #endif
 
-        parser a;
+
+        parser prs(tokens);
+
 
 
 

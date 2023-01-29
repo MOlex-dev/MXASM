@@ -16,7 +16,6 @@
 namespace mxasm
 {
     typedef std::pair<std::size_t, std::string> source_line;
-    typedef std::list<lexer_token>              lexer_tokens;
 
     class lexer
     {

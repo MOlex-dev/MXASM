@@ -129,7 +129,7 @@ identifier() noexcept
     // Check for underscores
     std::size_t underscores = std::count(result_lexeme.cbegin(), result_lexeme.cend(), '_');
     std::size_t name_length = result_lexeme.length();
-    if (result_lexeme.at(name_length - 1) == ':') --name_length;
+    if (*result_lexeme.rbegin() == ':') --name_length;
 
     if (underscores == name_length) {
         return unexpected(result_lexeme, get_column(begin));
