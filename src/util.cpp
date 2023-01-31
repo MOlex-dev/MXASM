@@ -6,6 +6,7 @@
  *-------------------------------*/
 
 #include <fstream>
+#include <cmath>
 
 #include "../include/util.hpp"
 
@@ -39,3 +40,55 @@ open_source_code(const std::string file_path)
 
     return source_code;
 }
+
+std::string        mxasm::
+to_lower(const std::string &default_string)
+{
+    std::string res = default_string;
+    std::for_each(res.begin(), res.end(), [](auto &c) { c = std::tolower(c); });
+    return res;
+}
+
+std::string        mxasm::
+to_upper(const std::string &default_string)
+{
+    std::string res = default_string;
+    std::for_each(res.begin(), res.end(), [](auto &c) { c = std::toupper(c); });
+    return res;
+}
+
+std::uint8_t       mxasm::
+math_repr_of_char(const char c)
+{
+    if (c >= '0' and c <= '9') return c - '0';
+    if (c >= 'A' and c <= 'Z') return c - 'A' + 0xA;
+    if (c >= 'a' and c <= 'z') return c - 'a' + 0xA;
+    return 0;
+}
+
+char               mxasm::
+char_repr_of_num(const uint8_t n)
+{
+    if (n >= 0 and n <= 9) return '0' + n;
+    if (n >= 10 and n <= 35) return 'a' + n - 10;
+    return 0;
+}
+
+std::string        mxasm::
+change_number_base(const std::string &number, const uint8_t def_base, const uint8_t new_base)
+{
+    uint64_t number_in_dec = 0;
+    for (std::size_t i = 0; i < number.length(); ++i) {
+        number_in_dec += math_repr_of_char(number.at(number.length() - 1 - i)) * std::pow(def_base, i);
+    }
+
+    std::string new_number;
+    do {
+        new_number.push_back(char_repr_of_num(number_in_dec % new_base));
+        number_in_dec /= new_base;
+    } while (number_in_dec);
+    std::reverse(new_number.begin(), new_number.end());
+    return new_number;
+}
+
+

@@ -9,6 +9,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 
 namespace mxasm
@@ -52,7 +53,6 @@ namespace mxasm
         std::size_t column() const noexcept;
         std::string lexeme() const noexcept;
         lt_kind     kind() const noexcept;
-        std::string kind_str() const noexcept;
 
         void row(const std::size_t row) noexcept;
         void column(const std::size_t column) noexcept;
@@ -61,6 +61,9 @@ namespace mxasm
 
         bool is(const lt_kind kind) const noexcept;
         bool is_not(const lt_kind kind) const noexcept;
+        bool is_number() const noexcept;
+
+        static std::string lt_kind_to_string(const lt_kind &kind) noexcept;
 
     private:
         std::size_t m_row;
@@ -69,5 +72,13 @@ namespace mxasm
         lt_kind     m_kind;
 
         const static std::map<lt_kind, std::string> kind_string;
+
+        friend std::ostream & operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind);
     };
+
+
+    typedef std::list<lexer_token>                         lexer_tokens;
+    std::ostream &operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind);
 }
+
+

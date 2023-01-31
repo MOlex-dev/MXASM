@@ -31,7 +31,6 @@ namespace mxasm
         std::string::const_iterator m_current_iter  {};
         std::size_t                 m_current_row   {};
 
-
         void        tokenize();
         lexer_token next(const source_line &line) noexcept;
         lexer_token comment() noexcept;

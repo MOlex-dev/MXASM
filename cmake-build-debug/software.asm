@@ -1,43 +1,43 @@
 * = $2000
+$4f
+$4F
 lda #$4 ; load 4 to accumulator
 jmp asz
 _start:
+$00Ac
 this a
 sbl 4
-jz #(00),05
+jz #(00),y
 lda (fa)
 and  %01101001
-043
-58
-1249
+.byte $04
 adc 975092
 "a"
 ldf $0fa3
 ldf $0fa3          "string"
-.proc
+.word
 "string\n"
-.do "a"
-"this 94u *&#Y 9 is" $05
+"a"
+"this 94u *&#Y 9 is", $05
 "lexeme"
-a .D
-.5
+.define LEXO = 4
+$4f
+a 
+ AFs
+  505000
 .byte "message" ;this is message $
-lda .prv
-lda .endproc
+lda 
+lda
 .byte  
-.bgt3
-.delta0
- %010
+ %0101010101010
 "lexeme", $A
-32
 label:a
 do_:
 mov eax, 4
 ;do $0x
-    ;    write here
+    ;    write herehe
         msg
 ,a  lda 034
     _end
 c,a
-0174
    ,   

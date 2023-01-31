@@ -9,9 +9,12 @@
 #include "../include/util.hpp"
 #include "../include/lexer.hpp"
 #include "../include/parser.hpp"
+#include "../include/serializer.hpp"
 
 //#define DEBUG_INPUT
-#define DEBUG_LEXER
+//#define DEBUG_LEXER
+#define DEBUG_PARSER_INPUT
+//#define DEBUG_PARSER
 
 using namespace mxasm;
 
@@ -44,18 +47,38 @@ int main(int argc, char **argv)
         for (const auto &token : tokens) {
             std::cout << std::setw(6) << token.row() << ',';
             std::cout << std::setw(4) << token.column() << ':';
-            std::cout << std::setw(25) << token.kind_str() << ": ";
+            std::cout << std::setw(25) << token.kind() << ": ";
             std::cout << token.lexeme();
             std::cout << '\n';
         }
 #endif
 
 
-        parser prs(tokens);
+        parser token_parser(tokens);
 
 
+#ifdef DEBUG_PARSER_INPUT
+        const auto &parsed_tokens = token_parser.organized_input();
+        for (const auto &token : parsed_tokens) {
+            std::cout << std::setw(4) << token.row() << ',';
+            std::cout << std::setw(3) << token.column() << ':';
+            std::cout << std::setw(24) << token.kind() << ": ";
+            std::cout << token.lexeme();
+            std::cout << '\n';
+        }
+#endif
 
 
+        const auto &serializable_tokens = tokenizer.tokens(); // TODO: fix
+
+
+#ifdef DEBUG_PARSER
+
+#endif
+
+
+        serializer encoder(parsed_tokens);
+        //print here
 
 
 

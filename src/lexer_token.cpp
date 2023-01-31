@@ -53,10 +53,6 @@ void               lexer_token::
 kind(const lt_kind kind) noexcept
 { m_kind = kind; }
 
-std::string        lexer_token::
-kind_str() const noexcept
-{ return kind_string.at(m_kind); }
-
 
 bool               lexer_token::
 is(const lt_kind kind) const noexcept
@@ -66,23 +62,35 @@ bool               lexer_token::
 is_not(const lt_kind kind) const noexcept
 { return m_kind != kind; }
 
+bool               lexer_token::
+is_number() const noexcept
+{
+    return m_kind == lt_kind::BINARY_CONSTANT  or m_kind == lt_kind::OCTAL_CONSTANT or
+           m_kind == lt_kind::DECIMAL_CONSTANT or m_kind == lt_kind::HEX_CONSTANT;
+}
+
+
+std::string lexer_token::
+lt_kind_to_string(const lt_kind &kind) noexcept
+{ return kind_string.at(kind); }
+
 
 const std::map<lt_kind, std::string> lexer_token::
 kind_string
 {
     { lt_kind::IDENTIFIER,       "IDENTIFIER"          },
     { lt_kind::COMMENT,          "COMMENT"             },
-    { lt_kind::DECIMAL_CONSTANT, "DECIMAL_CONSTANT"    },
-    { lt_kind::OCTAL_CONSTANT,   "OCTAL_CONSTANT"      },
-    { lt_kind::BINARY_CONSTANT,  "BINARY_CONSTANT"     },
+    { lt_kind::DECIMAL_CONSTANT, "DECIMAL CONSTANT"    },
+    { lt_kind::OCTAL_CONSTANT,   "OCTAL CONSTANT"      },
+    { lt_kind::BINARY_CONSTANT,  "BINARY CONSTANT"     },
     { lt_kind::HEX_CONSTANT,     "HEXADECIMAL CONSTANT"},
     { lt_kind::DIRECTIVE,        "DIRECTIVE"           },
     { lt_kind::STRING,           "STRING"              },
 
     { lt_kind::COMMA,             "COMMA"             },
     { lt_kind::HASH,              "HASH"              },
-    { lt_kind::LEFT_PARENTHESIS,  "LEFT_PARENTHESIS"  },
-    { lt_kind::RIGHT_PARENTHESIS, "RIGHT_PARENTHESIS" },
+    { lt_kind::LEFT_PARENTHESIS,  "LEFT PARENTHESIS"  },
+    { lt_kind::RIGHT_PARENTHESIS, "RIGHT PARENTHESIS" },
     { lt_kind::LESS,              "LESS"              },
     { lt_kind::GREATER,           "GREATER"           },
     { lt_kind::ASTERISK,          "ASTERISK"          },
@@ -91,3 +99,10 @@ kind_string
     { lt_kind::END_OF_LINE, "END OF LINE" },
     { lt_kind::UNEXPECTED,  "UNEXPECTED"  }
 };
+
+
+std::ostream &     mxasm::
+operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind) {
+    os << mxasm::lexer_token::kind_string.at(kind);
+    return os;
+}

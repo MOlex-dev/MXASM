@@ -37,16 +37,16 @@ APU_STATUS  =   $4015
 JOY1        =   $4016
 
 
-.segment "HEADER"
+ "HEADER"
 	.byte 	"NES", $1A
 	.byte 	2
 	.byte	1
 	.byte 	$01, $00
 
-.segment "STARTUP"
+ "STARTUP"
 
 
-.segment "CODE"
+ "CODE"
 
 reset:
 	sei			; disable IRQs
@@ -365,18 +365,18 @@ periodTableHi:
   	.byte $00,$00,$00,$00,$00,$00,$00,$00
 
 background_nametable:
-	.incbin "backgrounds/bk1.nam"
+	 "backgrounds/bk1.nam"
 
 background_pallete:
-	.incbin "backgrounds/bag.pal"
+	 "backgrounds/bag.pal"
 
 
 ;.segment "RODATA"
 
-.segment "VECTORS"
+ "VECTORS"
 	.word nmi		; when non-maskable interrupt happens, goes to label nmi
 	.word reset		; when the processor first turns on or is reset, goes to reset
 	.word irq		; using external interrupt IRQ
 
-.segment "CHARS"
-	.incbin "chr/mario.chr"	; includes 8KB graphics
+ "CHARS"
+	"chr/mario.chr"	; includes 8KB graphics
