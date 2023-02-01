@@ -125,7 +125,7 @@ pt_kind_str
 
 std::string        parser_token::
 pt_kind_to_str(const pt_kind &kind) noexcept
-{ return pt_kind_to_str(kind); }
+{ return pt_kind_str.at(kind); }
 
 bool               parser_token::
 value_exists_in_opcodes(const std::string &str) noexcept

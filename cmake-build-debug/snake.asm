@@ -61,7 +61,6 @@ initSnake:
   sta $15 ; body segment 2
   rts
 
-
 generateApplePosition:
   ;load a new random byte into $00
   lda sysRandom

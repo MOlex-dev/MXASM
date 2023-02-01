@@ -22,7 +22,40 @@ parser(const lexer_tokens &input_tokens)
 parser_tokens      parser::
 organized_input() const noexcept
 { return m_input_tokens; }
+#include <iostream>
+serializable_tokens     parser::
+tokens()
+{
+    try {
+        if (m_out_tokens.empty()) tokenize();
+    } catch (const std::exception &except) {
+        throw std::domain_error(except.what());
+    }
+    return m_out_tokens;
+}
 
+
+void               parser::
+tokenize()
+{
+    std::string exception_msg;
+
+    try { find_and_replace_macros(); }
+    catch (const std::exception &ex) {
+        exception_msg.append(std::string("Macro declaration error:\n") + ex.what());
+    }
+
+
+    //TODO: WORK HERE
+
+
+
+
+
+    if (not exception_msg.empty()) {
+        throw std::domain_error(exception_msg);
+    }
+}
 
 parser_tokens      parser::
 lexer_tokens_to_parser(const lexer_tokens &input)
@@ -136,6 +169,98 @@ check_register_name(const std::string &lexeme) const noexcept
 }
 
 
+void               parser::
+find_and_replace_macros()
+{
+    std::map<std::string, std::string> macros_values;
+    std::list<parser_tokens> tokens_row;
+    std::size_t current_row = 0;
+
+    // Generate list of command rows
+    for (const auto &e : m_input_tokens) {
+        if (e.row() == current_row) {
+            tokens_row.rbegin()->push_back(e);
+            continue;
+        }
+        current_row = e.row();
+        tokens_row.push_back({e});
+    }
+
+    std::string exception_string;
+
+    // Find macro
+    for (const auto &line : tokens_row) {
+        auto iter = line.begin();
+        current_row = iter->row();
+        std::string macro_name, macro_value;
+
+        if (iter->kind() != pt_kind::DIRECTIVE_MACRO) continue;
+        std::advance(iter, 1);
+        if (iter == line.end()) {
+            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
+                                    + std::string(". An IDENTIFIER was expected, but NEW LINE was found\n"));
+            continue;
+        }
+        if (iter->kind() != pt_kind::IDENTIFIER) {
+            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                  + std::to_string(iter->column()) + "]: An IDENTIFIER was expected, but "
+                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
+            continue;
+        }
+        macro_name = iter->lexeme();
+        std::advance(iter, 1);
+        if (iter == line.end()) {
+            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
+                                    + std::string(". A NUMBER was expected, but NEW LINE was found\n"));
+            continue;
+        }
+        if (iter->kind() != pt_kind::NUMBER) {
+            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                  + std::to_string(iter->column()) + "]: A NUMBER was expected, but "
+                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
+            continue;
+        }
+        macro_value = iter->lexeme();
+        std::advance(iter, 1);
+        if (iter != line.end()) {
+            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                  + std::to_string(iter->column()) + "]: A NEW LINE was expected, but "
+                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
+            continue;
+        }
+
+        // Add to macro list
+        if (macros_values.contains(macro_name)) {
+            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
+                                  + ": Macro with name " + macro_name + " already exists\n");
+            continue;
+        }
+        macros_values.emplace(to_lower(macro_name), macro_value);
+    }
+    if (not exception_string.empty()) {
+        throw std::domain_error(exception_string);
+    }
+
+    // Replace macro declaration and change macro using tokens
+    auto rem_iter = std::remove_if(tokens_row.begin(), tokens_row.end(), [](auto &row) {
+        if (row.begin()->kind() == pt_kind::DIRECTIVE_MACRO) return true;
+        return false;
+    });
+    tokens_row.erase(rem_iter, tokens_row.end());
+
+    m_input_tokens.clear();
+    for (auto &line : tokens_row) {
+        for (auto &token : line) {
+            if (token.is(pt_kind::IDENTIFIER)) {
+                if (macros_values.contains(to_lower(token.lexeme()))) {
+                    token.lexeme(macros_values[to_lower(token.lexeme())]);
+                    token.kind(pt_kind::NUMBER);
+                }
+            }
+            m_input_tokens.push_back(token);
+        }
+    }
+}
 
 
 

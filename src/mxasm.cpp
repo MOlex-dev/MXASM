@@ -13,8 +13,8 @@
 
 //#define DEBUG_INPUT
 //#define DEBUG_LEXER
-#define DEBUG_PARSER_INPUT
-//#define DEBUG_PARSER
+//#define DEBUG_PARSER_INPUT
+#define DEBUG_PARSER
 
 using namespace mxasm;
 
@@ -69,15 +69,22 @@ int main(int argc, char **argv)
 #endif
 
 
-        const auto &serializable_tokens = tokenizer.tokens(); // TODO: fix
+        const auto &serializable_tokens = token_parser.tokens();
 
 
 #ifdef DEBUG_PARSER
-
+        const auto &parsed_tokens = token_parser.organized_input(); // TODO: FIX KIND
+        for (const auto &token : parsed_tokens) {
+            std::cout << std::setw(4) << token.row() << ',';
+            std::cout << std::setw(3) << token.column() << ':';
+            std::cout << std::setw(24) << token.kind() << ": ";
+            std::cout << token.lexeme();
+            std::cout << '\n';
+        }
 #endif
 
 
-        serializer encoder(parsed_tokens);
+        serializer encoder(serializable_tokens);
         //print here
 
 

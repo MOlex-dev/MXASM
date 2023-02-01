@@ -8,33 +8,33 @@
 
 ; Variables
 
-char_vel_x	=	$0001
-char_vel_y	=	$0002
+.define char_vel_x $0001
+.define char_vel_y $0002
 
 ;;; Important Registers
 
 ; PPU
 
-PPU_CTRL    =   $2000
-PPU_MASK    =   $2001
-PPU_STATUS  =   $2002
-OAM_ADDR    =   $2003
-OAM_DATA    =   $2004
-PPU_SCROLL  =   $2005
-PPU_ADDR    =   $2006
-PPU_DATA    =   $2007
-OAM_DMA     =   $4014
+.define PPU_CTRL   $2000
+.define PPU_MASK   $2001
+.define PPU_STATUS $2002
+.define OAM_ADDR   $2003
+.define OAM_DATA   $2004
+.define PPU_SCROLL $2005
+.define PPU_ADDR   $2006
+.define PPU_DATA   $2007
+.define OAM_DMA    $4014
 
 ; APU
 
-SQ1_VOL     =   $4000
-SQ1_LO      =   $4002
-SQ1_HI      =   $4003
-APU_STATUS  =   $4015
+.define SQ1_VOL    $4000
+.define SQ1_LO     $4002
+.define SQ1_HI     $4003
+.define APU_STATUS $4015
 
 ; CONTROLLER INPUT
 
-JOY1        =   $4016
+.define JOY1 $4016
 
 
  "HEADER"

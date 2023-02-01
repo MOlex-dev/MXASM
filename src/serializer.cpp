@@ -11,5 +11,5 @@ using namespace mxasm;
 
 
 serializer::
-serializer(const parser_tokens &tokens)
+serializer(const serializable_tokens &tokens)
     : m_input_tokens {tokens} {}

@@ -16,7 +16,7 @@
 
 namespace mxasm
 {
-    class parser_token// TODO: MAKE TOKENS HIERARCHY
+    class parser_token
     {
     public:
         enum class pt_kind
