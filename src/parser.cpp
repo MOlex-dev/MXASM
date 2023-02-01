@@ -45,8 +45,13 @@ tokenize()
         exception_msg.append(std::string("Macro declaration error:\n") + ex.what());
     }
 
+    try { validate_labels(); }
+    catch (const std::exception &ex) {
+        exception_msg.append(std::string("Macro declaration error:\n") + ex.what());
+    }
 
-    //TODO: WORK HERE
+
+    //TODO: WORK HERE (VALIDATE .byte .word strings and byte squences)
 
 
 
@@ -262,9 +267,71 @@ find_and_replace_macros()
     }
 }
 
+void               parser::
+validate_labels()
+{
 
 
 
+
+
+
+    std::map<std::string, std::string> labels;
+
+
+
+
+    std::string exception_msg;
+    std::size_t label_number {0};
+    //fixme: try to do again list<lists>
+    for (auto &token : m_input_tokens) {
+        if (token.is(pt_kind::LABEL_DECLARATION)) {
+            std::string label_name = to_lower(token.lexeme().substr(0, token.lexeme().length() - 1));
+
+            //TODO: LABEL DECL CAN BE ONLY IN THE START OF STRING
+            if (labels.contains(label_name)) {
+                exception_msg.ap
+            }
+
+            if (labels.contains(new_lexeme)) {
+                exception_msg.append(std::string("Error at line ") + std::to_string(token.row())
+                                     + ": Label \'" + new_lexeme + "\' already exists\n");
+            }
+
+//FIXME TOLOWER!!!!!!!!!!!!!!!!
+
+
+//                // Add to macro list
+//                if (macros_values.contains(macro_name)) {
+//                    exception_string.append();
+//                    continue;
+//                }
+//                macros_values.emplace(to_lower(macro_name), macro_value);
+
+
+
+
+
+        }
+
+            // label actually exists
+    }
+//TOKEN NAME                  $5
+
+    for (const auto &e : m_input_tokens) {
+
+        
+    }
+//TODO: FIX
+
+// .byte and .word for strings and bytes lists
+
+
+
+    if (not exception_msg.empty()) {
+        throw std::domain_error(exception_msg);
+    }
+}
 
 
 bool               parser::
@@ -413,33 +480,11 @@ get() noexcept
 { return *m_current++; }
 
 
-//std::string        parser::
-//unexpected_token_message(const lexer_token &current, const lt_kind expected ...) const noexcept // TODO: Change lt_on pt_token kind
-//{
-//    std::string result_str = "At [" + std::to_string(current.row()) + ',' + std::to_string(current.column())
-//                             + "]: " + "Expected ";
-//
-//    va_list args;
-//    va_start(args, expected);
-//
-//    auto expected_kind = va_arg(args, lt_kind);
-//
-//    while (true) {
-//        result_str.append(lexer_token::lt_kind_to_string(expected_kind) + ", ");
-//    }
-//
-//
-//
-//
-//
+
 //    result_str.append("but " + lexer_token::lt_kind_to_string(current.kind()) + " found:\n"
 //                      + current.lexeme());
 //    return result_str;
 //}
-//
-//
-//
-
 
 
 

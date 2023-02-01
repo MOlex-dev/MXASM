@@ -7,6 +7,8 @@ $4F
 .define sz %0101010
 
 
+_start:
+
 lda #$4 ; load 4 to accumulator
 jmp asz
 _start:
@@ -23,12 +25,16 @@ adc 975092
 ldf $0fa3
 ldf $0fa3          "string"
 .word
+dosmth:
+
 "string\n"
 "a"
+countApples:
 "this 94u *&#Y 9 is", $05
 "lexeme"
 $4f
 a 
+count:
  AFs
   505000
 .byte "message" ;this is message $
@@ -37,10 +43,11 @@ lda
 .byte  
  %0101010101010
 "lexeme", $A
-label:a
+label:a       count:
 do_:
 mov eax, 4
 ;do $0x
+count:
     ;    write herehe
         msg
 ,a  lda 034

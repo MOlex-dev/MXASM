@@ -36,7 +36,7 @@ namespace mxasm
         parser_token::pt_kind check_register_name(const std::string &lexeme) const noexcept;
 
         void find_and_replace_macros();
-        // TODO HERE
+        void validate_labels();
 
         bool is_register_name(const std::string &str) const noexcept;
         bool is_opcode(const std::string &str) const noexcept;
