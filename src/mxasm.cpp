@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 #endif
 
 
-        const auto &serializable_tokens = token_parser.tokens();
+        const auto &serialized_tokens = token_parser.tokens();
 
 
 #ifdef DEBUG_PARSER
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 #endif
 
 
-        serializer encoder(serializable_tokens);
+        serializer encoder(serialized_tokens);
         //print here
 
 

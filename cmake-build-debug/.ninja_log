@@ -90,3 +90,12 @@
 1043	1282	6969256629029473	mxasm.exe	f2ba3eb6054a09a3
 3	1164	6969257938909480	CMakeFiles/mxasm.dir/src/parser.cpp.obj	2a5b644bfe6691a2
 1164	1422	6969257941429500	mxasm.exe	f2ba3eb6054a09a3
+11	160	6969317617322455	CMakeFiles/mxasm.dir/src/serializable_token.cpp.obj	7ea63609ab595b47
+6	506	6969317620792461	CMakeFiles/mxasm.dir/src/serializer.cpp.obj	b0ba1badfef1ad68
+3	884	6969317624574784	CMakeFiles/mxasm.dir/src/mxasm.cpp.obj	904055a0ca6d4e9f
+9	1146	6969317627184897	CMakeFiles/mxasm.dir/src/parser.cpp.obj	2a5b644bfe6691a2
+1147	1496	6969317630645651	mxasm.exe	f2ba3eb6054a09a3
+2	650	6969323517612329	CMakeFiles/mxasm.dir/src/mxasm.cpp.obj	904055a0ca6d4e9f
+650	898	6969323520062301	mxasm.exe	f2ba3eb6054a09a3
+2	640	6969323852896708	CMakeFiles/mxasm.dir/src/mxasm.cpp.obj	904055a0ca6d4e9f
+641	862	6969323855096661	mxasm.exe	f2ba3eb6054a09a3
