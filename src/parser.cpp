@@ -47,16 +47,62 @@ tokenize()
 
     try { validate_labels(); }
     catch (const std::exception &ex) {
-        exception_msg.append(std::string("Macro declaration error:\n") + ex.what());
+        exception_msg.append(std::string("Label error:\n") + ex.what());
     }
 
+    std::size_t current_row {};
+    // Check if row starts not from directive, label declaration, or opcode
+    for (const auto &token : m_input_tokens) {
+        if (current_row == token.row()) continue;
+        current_row = token.row();
+        if (token.is_not(pt_kind::LABEL_DECLARATION) and
+            (not parser_token::is_opcode(token.kind())) and
+            (not parser_token::is_directive(token.kind()))) {
+            exception_msg.append(std::string("Error at [") + std::to_string(token.row()) + ", "
+                               + std::to_string(token.column()) + "]: DIRECTIVE, LABEL DECLARATION or OPCODE was " \
+                                 "expected, but " + parser_token::pt_kind_to_str(token.kind()) + " was found:\n"
+                               + token.lexeme() + '\n');
+        }
+    }
+    try { parse_tokens(); }
+    catch (const std::exception &ex) {
+        exception_msg.append(std::string("Parsing error:\n") + ex.what());
+    }
 
-    //TODO: WORK HERE (VALIDATE .byte .word strings and byte squences)
+    if (not exception_msg.empty()) {
+        throw std::domain_error(exception_msg);
+    }
+}
+
+void               parser::
+parse_tokens()
+{
+    std::list<parser_tokens> tokens_row;
+    std::size_t current_row = 0;
+
+    // Generate list of command rows
+    for (const auto &e : m_input_tokens) {
+        if (e.row() == current_row) {
+            tokens_row.rbegin()->push_back(e);
+            continue;
+        }
+        current_row = e.row();
+        tokens_row.push_back({ e });
+    }
+
+    std::string exception_msg;
+
+    for (const auto &line : tokens_row) {
 
 
 
 
 
+        //TODO: WORK HERE (VALIDATE .byte .word strings and byte sequences)
+
+
+
+    }
     if (not exception_msg.empty()) {
         throw std::domain_error(exception_msg);
     }
@@ -270,64 +316,51 @@ find_and_replace_macros()
 void               parser::
 validate_labels()
 {
-
-
-
-
-
-
     std::map<std::string, std::string> labels;
-
-
-
+    std::size_t                        current_row = 0;
 
     std::string exception_msg;
     std::size_t label_number {0};
-    //fixme: try to do again list<lists>
+
     for (auto &token : m_input_tokens) {
+        if (token.row() == current_row) continue;
+        current_row = token.row();
+
         if (token.is(pt_kind::LABEL_DECLARATION)) {
             std::string label_name = to_lower(token.lexeme().substr(0, token.lexeme().length() - 1));
-
-            //TODO: LABEL DECL CAN BE ONLY IN THE START OF STRING
             if (labels.contains(label_name)) {
-                exception_msg.ap
-            }
-
-            if (labels.contains(new_lexeme)) {
                 exception_msg.append(std::string("Error at line ") + std::to_string(token.row())
-                                     + ": Label \'" + new_lexeme + "\' already exists\n");
+                                   + ": Label \'" + token.lexeme() + "\' already exists\n");
+                continue;
             }
 
-//FIXME TOLOWER!!!!!!!!!!!!!!!!
+            // Add to macro list
+            auto new_label_name = std::string("@") + std::to_string(label_number++);
+            labels.emplace(label_name, new_label_name);
+            token.lexeme(new_label_name);
+        }
+    }
 
-
-//                // Add to macro list
-//                if (macros_values.contains(macro_name)) {
-//                    exception_string.append();
-//                    continue;
-//                }
-//                macros_values.emplace(to_lower(macro_name), macro_value);
-
-
-
-
-
+    current_row = 0;
+    for (auto &token : m_input_tokens) {
+        if (token.row() != current_row) {
+            current_row = token.row();
+            continue;
         }
 
-            // label actually exists
+        if (token.is_not(pt_kind::IDENTIFIER)) continue;
+        std::string label_name = to_lower(token.lexeme());
+
+        if (not labels.contains(label_name)) {
+            exception_msg.append(std::string("Error at [") + std::to_string(token.row()) + ", "
+                               + std::to_string(token.column()) + "]: Label or macro \'" + token.lexeme()
+                               + "\' doesn't exist\n");
+            continue;
+        }
+
+        token.lexeme(labels[label_name]);
+        token.kind(pt_kind::LABEL_CALL);
     }
-//TOKEN NAME                  $5
-
-    for (const auto &e : m_input_tokens) {
-
-        
-    }
-//TODO: FIX
-
-// .byte and .word for strings and bytes lists
-
-
-
     if (not exception_msg.empty()) {
         throw std::domain_error(exception_msg);
     }
@@ -345,146 +378,4 @@ is_opcode(const std::string &str) const noexcept
 bool               parser::
 is_label_declaration(const std::string &str) const noexcept
 { return *str.rbegin() == ':'; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//void               parser::
-//tokenize()
-//{
-//    std::string exception_msg;
-//
-//    find_constants();
-//
-//    for (const auto &operation : m_input_tokens) {
-//        try {
-//            auto res_token = parse_line(operation);
-//            m_tokens.push_back(res_token);
-//        } catch (const std::exception &except) {
-//            exception_msg.append(std::string(except.what()) + '\n');
-//            continue;
-//        }
-//    }
-//
-//    if (not exception_msg.empty()) {
-//        throw std::domain_error(exception_msg);
-//    }
-//}
-//
-//void               parser::
-//find_constants()
-//{
-//    for (const auto &line : m_input_tokens) {
-//        if (line.begin()->lexeme() == ".define") {
-//            m_current = line.begin();
-//            m_current_end = line.end();
-//            parse_constant();
-//
-//        }
-//
-//    }
-//
-//}
-
-void               parser::
-parse_constant()
-{
-    get();
-    if(peek().kind() == lt_kind::IDENTIFIER) { // TODO: Check const sizes
-
-    }
-
-}
-
-
-
-
-parser_token       parser::
-parse_line(const lexer_tokens &tokens)
-{
-    m_current = tokens.cbegin();
-    m_current_end = tokens.cend();
-
-    if (peek().kind() == lt_kind::DIRECTIVE or peek().kind() == lt_kind::ASTERISK) return directive();
-
-
-
-
-
-
-
-
-    if (peek().is_number()) {
-        std::string exception_msg = "At [" + std::to_string(m_current->row()) + ',' + std::to_string(m_current->column())
-                                  + "]: " + "Expected operation, label, or directive, but "
-                                  + lexer_token::lt_kind_to_string(m_current->kind()) + " found!\n"
-                                  + m_current->lexeme() + '\n';
-
-    //    throw std::domain_error(unexpected_token_message(get()));
-    }
-
-
-
-
-
-
-
-
-
-    return parser_token{};
-}
-
-
-parser_token       parser::
-directive()
-{
-    if (get().lexeme() == "*")
-    if (get().lexeme() == ".define");
-    if (get().lexeme() == ".byte");
-    if (get().lexeme() == ".word");
-}
-
-parser_token       parser::
-directive_code_position()
-{
-
-}
-
-
-lexer_token        parser::
-peek() const noexcept
-{ return *m_current; }
-
-lexer_token        parser::
-get() noexcept
-{ return *m_current++; }
-
-
-
-//    result_str.append("but " + lexer_token::lt_kind_to_string(current.kind()) + " found:\n"
-//                      + current.lexeme());
-//    return result_str;
-//}
-
-
 

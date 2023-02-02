@@ -259,7 +259,6 @@ drawSnake:
   sta (snakeHeadL,x) ; paint head
   rts
 
-
 spinWheels:
   ldx #0
 spinloop:

@@ -36,18 +36,6 @@
 
 .define JOY1 $4016
 
-
- "HEADER"
-	.byte 	"NES", $1A
-	.byte 	2
-	.byte	1
-	.byte 	$01, $00
-
- "STARTUP"
-
-
- "CODE"
-
 reset:
 	sei			; disable IRQs
 	cld			; disable decimal mode
@@ -365,18 +353,12 @@ periodTableHi:
   	.byte $00,$00,$00,$00,$00,$00,$00,$00
 
 background_nametable:
-	 "backgrounds/bk1.nam"
 
 background_pallete:
-	 "backgrounds/bag.pal"
 
 
 ;.segment "RODATA"
-
- "VECTORS"
 	.word nmi		; when non-maskable interrupt happens, goes to label nmi
 	.word reset		; when the processor first turns on or is reset, goes to reset
 	.word irq		; using external interrupt IRQ
 
- "CHARS"
-	"chr/mario.chr"	; includes 8KB graphics

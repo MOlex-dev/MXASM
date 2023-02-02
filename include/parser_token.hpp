@@ -30,6 +30,7 @@ namespace mxasm
             REGISTER_Y,
 
             LABEL_DECLARATION,
+            LABEL_CALL,
             IDENTIFIER,           // Is macro or label name
             NUMBER,
             STRING,
@@ -61,7 +62,7 @@ namespace mxasm
             SMB0, SMB1, SMB2, SMB3, SMB4, SMB5, SMB6, SMB7,
             STA, STP, STX, STY, STZ,
             TAX, TAY, TRB, TSB, TSX, TXA, TXS, TYA,
-            WAI,
+            WAI
         };
 
         parser_token() = default;
@@ -83,6 +84,8 @@ namespace mxasm
         static std::string pt_kind_to_str(const pt_kind &kind) noexcept;
         static bool        value_exists_in_opcodes(const std::string &str) noexcept;
         static pt_kind     get_opcode_name(const std::string &str);
+        static bool        is_opcode(const pt_kind &kind) noexcept;
+        static bool        is_directive(const pt_kind &kind) noexcept;
 
     private:
         pt_kind     m_kind   {};

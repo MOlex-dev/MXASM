@@ -8,6 +8,9 @@
 #pragma once
 
 #include <list>
+#include <vector>
+
+#include "../include/util.hpp"
 
 
 namespace mxasm
@@ -15,7 +18,12 @@ namespace mxasm
     class serializable_token
     {
     public:
-        enum st_kind
+        enum class st_kind
+        { COMMAND, DIRECTIVE, LABEL_DECLARATION };
+        enum class st_directive
+        { CODE_POSITION, BYTE_LINE };
+
+        enum st_command
         {
             BRK_stk = 0x00, ORA_izx = 0x01,                 TSB_zpg = 0x04, ORA_zpg = 0x05, ASL_zpg = 0x06, RMB0_zpg = 0x07, PHP_stk = 0x08, ORA_imm = 0x09, ASL_a   = 0x0A,                 TSB_abs = 0x0C, ORA_abs = 0x0D, ASL_abs = 0x0E, BBR0_zpr = 0x0F,
             BPL_rel = 0x10, ORA_izy = 0x11, ORA_izp = 0x12, TRB_zpg = 0x14, ORA_zpx = 0x15, ASL_zpx = 0x16, RMB1_zpg = 0x17, CLC_imp = 0x18, ORA_aby = 0x19, INC_a   = 0x1A,                 TRB_abs = 0x1C, ORA_abx = 0x1D, ASL_abx = 0x1E, BBR1_zpr = 0x1F,
@@ -35,14 +43,42 @@ namespace mxasm
             BEQ_rel = 0xF0, SBC_izy = 0xF1, SBC_izp = 0xF2,                 SBC_zpx = 0xF5, INC_zpx = 0xF6, SMB7_zpg = 0xF7, SED_imp = 0xF8, SBC_aby = 0xF9, PLX_stk = 0xFA,                                 SBC_abx = 0xFD, INC_abx = 0xFE, BBS7_zpr = 0xFF
         };
 
+        enum class st_cmd_ad_mode
+        {
+            IMM,
+            ABS, ABX, ABY,
+            IND, IAX,
+            REL,
+            STK, IMP, A,
+            ZPG, ZPR, ZPX, ZPY,
+            IZP, IZX, IZY,
+        };
 
+        st_kind           kind() const noexcept;
+        st_command        command() const noexcept;
+        st_directive      directive() const noexcept;
+        word              number() const noexcept;
+        std::vector<byte> bytes() const noexcept;
+
+        void kind(const st_kind &kind) noexcept;
+        void command(const st_command &command) noexcept;
+        void directive(const st_directive &directive) noexcept;
+        void number(const word number) noexcept;
+        void bytes(const std::vector<byte> &lst) noexcept;
 
     private:
-        st_kind m_kind;
+        st_kind      m_kind;
+        st_command   m_command;
+        st_directive m_directive;
 
+        word              m_number;
+        std::vector<byte> m_bytes;
+
+        friend std::ostream &operator<<(std::ostream &os, const mxasm::serializable_token &token);
     };
 
     typedef std::list<serializable_token> serializable_tokens;
+    std::ostream &operator<<(std::ostream &os, const mxasm::serializable_token &token);
 }
 
 

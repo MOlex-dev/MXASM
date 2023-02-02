@@ -28,6 +28,7 @@ namespace mxasm
         serializable_tokens m_out_tokens;
 
         void                  tokenize();
+        void                  parse_tokens();
         parser_tokens         lexer_tokens_to_parser(const lexer_tokens &input);
         std::string           parse_number_to_hex(const lexer_token &token) const noexcept;
         parser_token::pt_kind check_directive_type(const std::string &lexeme) const;
@@ -53,30 +54,6 @@ namespace mxasm
 
         lexer_tokens::const_iterator m_current;
         lexer_tokens::const_iterator m_current_end;
-
-//        std::unordered_map<std::string, std::variant<byte, word>> m_constants;
-//
-//
-//
-//        lexed_oplist lexer_tokens_to_parser_list(const lexer_tokens &input_tokens);
-        void         find_constants();
-        void         parse_constant();
-
-
-        parser_token parse_line(const lexer_tokens &tokens);
-
-
-
-        parser_token directive();
-        parser_token directive_code_position();
-
-        lexer_token peek() const noexcept;
-        lexer_token get() noexcept;
-
-
-        std::string unexpected_token_message(const lexer_token &current,
-                                             const lexer_token::lt_kind expected ...) const noexcept;
-
 
 
 

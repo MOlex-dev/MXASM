@@ -1,56 +1,34 @@
 * = $2000
-$4f
-$4F
 .define cpfa $3
 .define cpf 03
 
 .define sz %0101010
 
-
+bpl _start
 _start:
 
 lda #$4 ; load 4 to accumulator
-jmp asz
-_start:
-$00Ac
-this a   .define 024 2
-sbl 4
-jz #(00),y
-lda (fa)
+lda ()
 and  %01101001
 lda #cpfa
 .byte $04
 adc 975092
-"a"
-ldf $0fa3
-ldf $0fa3          "string"
-.word
-dosmth:
+.word sz
+    dosmth:
+countApples: .word $0500
+.byte "this 94u *&#Y 9 is", $05
 
-"string\n"
-"a"
-countApples:
-"this 94u *&#Y 9 is", $05
-"lexeme"
-$4f
-a 
+do_:
 count:
- AFs
-  505000
+
+.define smx 3
+lda #smx
 .byte "message" ;this is message $
 lda 
 lda
 .byte  
- %0101010101010
-"lexeme", $A
-label:a       count:
-do_:
-mov eax, 4
+
+label:    count:
 ;do $0x
-count:
     ;    write herehe
-        msg
-,a  lda 034
-    _end
-c,a
-   ,   
+lda 034

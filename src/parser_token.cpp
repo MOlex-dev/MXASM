@@ -84,6 +84,7 @@ pt_kind_str
     { pt_kind::REGISTER_X,              "REGISTER X"              },
     { pt_kind::REGISTER_Y,              "REGISTER Y"              },
     { pt_kind::LABEL_DECLARATION,       "LABEL DECLARATION"       },
+    { pt_kind::LABEL_CALL,              "LABEL CALL"              },
     { pt_kind::IDENTIFIER,              "IDENTIFIER"              },
     { pt_kind::NUMBER,                  "NUMBER"                  },
     { pt_kind::STRING,                  "STRING"                  },
@@ -102,7 +103,7 @@ pt_kind_str
     { pt_kind::BBS1, "BBS1" }, { pt_kind::BBS2, "BBS2" }, { pt_kind::BBS3, "BBS3" }, { pt_kind::BBS4, "BBS4" },
     { pt_kind::BBS5, "BBS5" }, { pt_kind::BBS6, "BBS6" }, { pt_kind::BBS7, "BBS7" }, { pt_kind::BCC,  "BCC"  },
     { pt_kind::BCS,  "BCS"  }, { pt_kind::BEQ,  "BEQ"  }, { pt_kind::BIT,  "BIT"  }, { pt_kind::BMI,  "BMI"  },
-    { pt_kind::BNE,  "BNE"  }, { pt_kind::BPL,  "BPl"  }, { pt_kind::BRA,  "BRA"  }, { pt_kind::BRK,  "BRK"  },
+    { pt_kind::BNE,  "BNE"  }, { pt_kind::BPL,  "BPL"  }, { pt_kind::BRA,  "BRA"  }, { pt_kind::BRK,  "BRK"  },
     { pt_kind::BVC,  "BVC"  }, { pt_kind::BVS,  "BVS"  }, { pt_kind::CLC,  "CLC"  }, { pt_kind::CLD,  "CLD"  },
     { pt_kind::CLI,  "CLI"  }, { pt_kind::CLV,  "CLV"  }, { pt_kind::CMP,  "CMP"  }, { pt_kind::CPY,  "CPY"  },
     { pt_kind::CPX,  "CPX"  }, { pt_kind::DEC,  "DEC"  }, { pt_kind::DEX,  "DEX"  }, { pt_kind::DEY,  "DEY"  },
@@ -147,6 +148,18 @@ get_opcode_name(const std::string &str)
         }
     }
     throw std::invalid_argument("There is no opcode with such name: " + to_upper(str) + "\n");
+}
+
+bool               parser_token::
+is_opcode(const pt_kind &kind) noexcept
+{ return kind >= pt_kind::ADC and kind <= pt_kind::WAI; }
+
+bool               parser_token::
+is_directive(const pt_kind &kind) noexcept
+{
+    return    kind == pt_kind::DIRECTIVE_BYTE
+           or kind == pt_kind::DIRECTIVE_WORD
+           or kind == pt_kind::DIRECTIVE_CODE_POSITION;
 }
 
 
