@@ -97,6 +97,24 @@ build CMakeFiles/mxasm.dir/src/serializable_token.cpp.obj: CXX_COMPILER__mxasm_D
   OBJECT_DIR = CMakeFiles\mxasm.dir
   OBJECT_FILE_DIR = CMakeFiles\mxasm.dir\src
 
+build CMakeFiles/mxasm.dir/src/exceptions/mxasm_exception.cpp.obj: CXX_COMPILER__mxasm_Debug C$:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна$ робота$ Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/src/exceptions/mxasm_exception.cpp || cmake_object_order_depends_target_mxasm
+  DEP_FILE = CMakeFiles\mxasm.dir\src\exceptions\mxasm_exception.cpp.obj.d
+  FLAGS = -g -std=gnu++23
+  OBJECT_DIR = CMakeFiles\mxasm.dir
+  OBJECT_FILE_DIR = CMakeFiles\mxasm.dir\src\exceptions
+
+build CMakeFiles/mxasm.dir/src/exceptions/arguments_excpetion.cpp.obj: CXX_COMPILER__mxasm_Debug C$:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна$ робота$ Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/src/exceptions/arguments_excpetion.cpp || cmake_object_order_depends_target_mxasm
+  DEP_FILE = CMakeFiles\mxasm.dir\src\exceptions\arguments_excpetion.cpp.obj.d
+  FLAGS = -g -std=gnu++23
+  OBJECT_DIR = CMakeFiles\mxasm.dir
+  OBJECT_FILE_DIR = CMakeFiles\mxasm.dir\src\exceptions
+
+build CMakeFiles/mxasm.dir/src/exceptions/lexer_exception.cpp.obj: CXX_COMPILER__mxasm_Debug C$:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна$ робота$ Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/src/exceptions/lexer_exception.cpp || cmake_object_order_depends_target_mxasm
+  DEP_FILE = CMakeFiles\mxasm.dir\src\exceptions\lexer_exception.cpp.obj.d
+  FLAGS = -g -std=gnu++23
+  OBJECT_DIR = CMakeFiles\mxasm.dir
+  OBJECT_FILE_DIR = CMakeFiles\mxasm.dir\src\exceptions
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target mxasm
@@ -105,7 +123,7 @@ build CMakeFiles/mxasm.dir/src/serializable_token.cpp.obj: CXX_COMPILER__mxasm_D
 #############################################
 # Link the executable mxasm.exe
 
-build mxasm.exe: CXX_EXECUTABLE_LINKER__mxasm_Debug CMakeFiles/mxasm.dir/src/mxasm.cpp.obj CMakeFiles/mxasm.dir/src/lexer.cpp.obj CMakeFiles/mxasm.dir/src/lexer_token.cpp.obj CMakeFiles/mxasm.dir/src/util.cpp.obj CMakeFiles/mxasm.dir/src/parser.cpp.obj CMakeFiles/mxasm.dir/src/parser_token.cpp.obj CMakeFiles/mxasm.dir/src/serializer.cpp.obj CMakeFiles/mxasm.dir/src/serializable_token.cpp.obj
+build mxasm.exe: CXX_EXECUTABLE_LINKER__mxasm_Debug CMakeFiles/mxasm.dir/src/mxasm.cpp.obj CMakeFiles/mxasm.dir/src/lexer.cpp.obj CMakeFiles/mxasm.dir/src/lexer_token.cpp.obj CMakeFiles/mxasm.dir/src/util.cpp.obj CMakeFiles/mxasm.dir/src/parser.cpp.obj CMakeFiles/mxasm.dir/src/parser_token.cpp.obj CMakeFiles/mxasm.dir/src/serializer.cpp.obj CMakeFiles/mxasm.dir/src/serializable_token.cpp.obj CMakeFiles/mxasm.dir/src/exceptions/mxasm_exception.cpp.obj CMakeFiles/mxasm.dir/src/exceptions/arguments_excpetion.cpp.obj CMakeFiles/mxasm.dir/src/exceptions/lexer_exception.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\mxasm.dir

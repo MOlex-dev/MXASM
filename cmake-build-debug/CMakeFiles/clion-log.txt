@@ -1,4 +1,18 @@
 "C:\Programs\CLion 2021.3.4\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Programs/CLion 2021.3.4/bin/ninja/win/ninja.exe" -G Ninja -S "C:\Users\RavenFox\Desktop\LNTU\_Курсові\Кваліфікаційна робота Бакалавр\прог_бакалавр_Міщук_ОС_іпз41_2023\mxasm" -B "C:\Users\RavenFox\Desktop\LNTU\_Курсові\Кваліфікаційна робота Бакалавр\прог_бакалавр_Міщук_ОС_іпз41_2023\mxasm\cmake-build-debug"
 -- Configuring done
+CMake Warning in CMakeLists.txt:
+  The object file directory
+
+    C:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна робота Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/cmake-build-debug/CMakeFiles/mxasm.dir/./
+
+  has 209 characters.  The maximum full path to an object file is 250
+  characters (see CMAKE_OBJECT_PATH_MAX).  Object file
+
+    src/exceptions/arguments_excpetion.cpp.obj
+
+  cannot be safely placed under this directory.  The build may not work
+  correctly.
+
+
 -- Generating done
 -- Build files have been written to: C:/Users/RavenFox/Desktop/LNTU/_Курсові/Кваліфікаційна робота Бакалавр/прог_бакалавр_Міщук_ОС_іпз41_2023/mxasm/cmake-build-debug

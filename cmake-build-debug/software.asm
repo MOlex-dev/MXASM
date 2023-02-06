@@ -6,11 +6,11 @@
 
 bpl _start
 _start:
-
+     
 lda #$4 ; load 4 to accumulator
 lda ()
 and  %01101001
-lda #cpfa
+lda #(X), cpfa
 .byte $04
 adc 975092
 .word sz

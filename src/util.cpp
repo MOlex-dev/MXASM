@@ -5,43 +5,59 @@
  |       Author: MOlex-dev       |
  *-------------------------------*/
 
-#include <fstream>
-#include <cmath>
+
 
 #include "../include/util.hpp"
 
 using namespace mxasm;
 
 
-void               mxasm::
-validate_source_file_path(const std::string path)
+std::string             mxasm::
+get_source_file_path_from_cmd(const std::vector<std::string> &arguments)
 {
-    if (path.length() < 5 or path.substr(path.length() - 4, 4) != ".asm") {
-        throw std::invalid_argument("Wrong source file extension. Must be [name].asm\n");
+    if (arguments.size() == 1) {
+        throw arguments_exception("No input file");
     }
+    if (arguments.size() > 2) {
+        throw arguments_exception("Too many arguments");
+    }
+
+    std::string path_to_file = arguments.at(1);
+
+    if (path_to_file.length() < 5 or path_to_file.substr(path_to_file.length() - 4, 4) != ".asm") {
+        throw arguments_exception("Wrong source code file name or extension: \'" + path_to_file
+                                  + "\'. Should be [name].asm");
+    }
+
+    return path_to_file;
 }
 
-source_listing   mxasm::
+source_listing          mxasm::
 open_source_code(const std::string file_path)
 {
-    std::ifstream reader(file_path);
-    if (not reader.is_open()) {
-        throw std::runtime_error("Source code file opening error!\n");
+    std::ifstream file_reader(file_path);
+
+    if (not file_reader.is_open()) {
+        throw arguments_exception("Can't open source code file \'" + file_path + '\'');
     }
 
     source_listing source_code;
-    std::string buffer;
-    std::size_t line_number {1};
+    std::string    buffer;
+    std::size_t    line_number {0};
 
-    while (std::getline(reader, buffer)) {
-        source_code.emplace_back(line_number, buffer);
+    while (std::getline(file_reader, buffer)) {
         ++line_number;
+        if (buffer.empty() or buffer.length() == std::count(buffer.begin(), buffer.end(), ' ')) {
+            continue;
+        }
+        source_code.emplace_back(line_number, buffer);
     }
 
     return source_code;
 }
 
-std::string        mxasm::
+
+std::string             mxasm::
 to_lower(const std::string &default_string)
 {
     std::string res = default_string;
@@ -49,13 +65,35 @@ to_lower(const std::string &default_string)
     return res;
 }
 
-std::string        mxasm::
+std::string             mxasm::
 to_upper(const std::string &default_string)
 {
     std::string res = default_string;
     std::for_each(res.begin(), res.end(), [](auto &c) { c = std::toupper(c); });
     return res;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <cmath>
+
 
 std::uint8_t       mxasm::
 math_repr_of_char(const char c)

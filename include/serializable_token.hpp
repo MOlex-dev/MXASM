@@ -9,6 +9,7 @@
 
 #include <list>
 #include <vector>
+#include <iostream>
 
 #include "../include/util.hpp"
 
@@ -54,25 +55,43 @@ namespace mxasm
             IZP, IZX, IZY,
         };
 
+        bool is_labeled = false;
+
         st_kind           kind() const noexcept;
         st_command        command() const noexcept;
         st_directive      directive() const noexcept;
-        word              number() const noexcept;
-        std::vector<byte> bytes() const noexcept;
+        word_t              number() const noexcept;
+        std::vector<byte_t> bytes() const noexcept;
+        st_cmd_ad_mode adr_mode() const noexcept;
+        std::string    lexeme() const noexcept;
 
         void kind(const st_kind &kind) noexcept;
         void command(const st_command &command) noexcept;
         void directive(const st_directive &directive) noexcept;
-        void number(const word number) noexcept;
-        void bytes(const std::vector<byte> &lst) noexcept;
+        void number(const word_t number) noexcept;
+        void bytes(const std::vector<byte_t> &lst) noexcept;
+        st_cmd_ad_mode adr_mode(const st_cmd_ad_mode &mode) noexcept;
+        std::string lexeme(const std::string &str) noexcept;
+
+        std::string command_name() {
+            std::string result;
+
+        }
+
+
 
     private:
+
+
+
         st_kind      m_kind;
         st_command   m_command;
         st_directive m_directive;
+        st_cmd_ad_mode m_mode;
+        std::string  m_lexeme;
 
-        word              m_number;
-        std::vector<byte> m_bytes;
+        word_t              m_number;
+        std::vector<byte_t> m_bytes;
 
         friend std::ostream &operator<<(std::ostream &os, const mxasm::serializable_token &token);
     };

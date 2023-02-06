@@ -12,10 +12,14 @@
 using namespace mxasm;
 using lt_kind = mxasm::lexer_token::lt_kind;
 using pt_kind = mxasm::parser_token::pt_kind;
+using st_kind = mxasm::serializable_token::st_kind;
+using st_directive = mxasm::serializable_token::st_directive;
+using st_command = mxasm::serializable_token::st_command;
+using st_adr_mode = mxasm::serializable_token::st_cmd_ad_mode;
 
 
 parser::
-parser(const lexer_tokens &input_tokens)
+parser(const std::list<lexer_token> &input_tokens)
     : m_input_tokens {lexer_tokens_to_parser(input_tokens)}, m_lex_tokens {input_tokens} {}
 
 
@@ -93,15 +97,62 @@ parse_tokens()
     std::string exception_msg;
 
     for (const auto &line : tokens_row) {
+        if (m_current_end != line.cend()) {
+            m_current = line.cbegin();
+            m_current_end = line.cend();
+            current_row = line.cbegin()->row();
+        }
+
+        serializable_token outer_token;
+        switch (get().kind()) {
 
 
+            //TODO: WORK HERE (VALIDATE .byte .word strings and byte sequences)
+            // TODO: AFTER BYTES WE CAN HAVE ALSO LABEL
 
 
+            case pt_kind::DIRECTIVE_BYTE:
 
-        //TODO: WORK HERE (VALIDATE .byte .word strings and byte sequences)
+                break;
+            case pt_kind::DIRECTIVE_WORD:
 
-
-
+                break;
+            case pt_kind::DIRECTIVE_CODE_POSITION:
+                if (m_current == m_current_end) {
+                    exception_msg.append(std::string("Error at line ") + std::to_string(current_row)
+                                         + ". An \'=\' was expected, but NEW LINE was found\n");
+                    continue;
+                }
+                if (m_current->is_not(pt_kind::EQUALS)) {
+                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                        + std::to_string(m_current->column()) + "]: An '\'=\' was expected, but "
+                                        + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
+                    continue;
+                }
+                std::advance(m_current, 1);
+                if (m_current == m_current_end) {
+                    exception_msg.append(std::string("Error at line ") + std::to_string(current_row)
+                                         + ". An NUMBER was expected, but NEW LINE was found\n");
+                    continue;
+                }
+                if (m_current->is_not(pt_kind::NUMBER)) {
+                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                         + std::to_string(m_current->column()) + "]: A NUMBER was expected, but "
+                                         + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
+                    continue;
+                }
+                std::advance(m_current, 1);
+                if (m_current != m_current_end) {
+                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
+                                         + std::to_string(m_current->column()) + "]: A NEW LINE was expected, but "
+                                         + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
+                    continue;
+                }
+                outer_token.kind(st_kind::DIRECTIVE);
+                outer_token.directive(st_directive::CODE_POSITION);
+                break;
+        }
+        m_out_tokens.push_back(outer_token);
     }
     if (not exception_msg.empty()) {
         throw std::domain_error(exception_msg);
@@ -109,7 +160,7 @@ parse_tokens()
 }
 
 parser_tokens      parser::
-lexer_tokens_to_parser(const lexer_tokens &input)
+lexer_tokens_to_parser(const std::list<lexer_token> &input)
 {
     std::string   exception_str;
     parser_tokens converted_tokens;
@@ -379,3 +430,11 @@ bool               parser::
 is_label_declaration(const std::string &str) const noexcept
 { return *str.rbegin() == ':'; }
 
+
+parser_token       parser::
+peek() const noexcept
+{ return *m_current; }
+
+parser_token       parser::
+get() noexcept
+{ return *m_current++; }

@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <map>
+
 #include "../include/util.hpp"
 #include "../include/serializable_token.hpp"
 

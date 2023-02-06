@@ -9,7 +9,6 @@
 
 #include <string>
 #include <map>
-#include <list>
 
 
 namespace mxasm
@@ -20,14 +19,15 @@ namespace mxasm
         enum class lt_kind
         {
             // multichar
-            IDENTIFIER,
             COMMENT,
-            DECIMAL_CONSTANT,
-            BINARY_CONSTANT,
-            OCTAL_CONSTANT,
-            HEX_CONSTANT,
             DIRECTIVE,
             STRING,
+            HEX_CONSTANT,
+            BINARY_CONSTANT,
+            OCTAL_CONSTANT,
+            DECIMAL_CONSTANT,
+            IDENTIFIER,
+            LABEL_DECLARATION,
 
             // atom
             COMMA,
@@ -47,8 +47,6 @@ namespace mxasm
         lexer_token(const lt_kind kind);
         lexer_token(const lt_kind kind, const std::string lexeme, const std::size_t row, const std::size_t column);
 
-
-
         std::size_t row() const noexcept;
         std::size_t column() const noexcept;
         std::string lexeme() const noexcept;
@@ -61,9 +59,8 @@ namespace mxasm
 
         bool is(const lt_kind kind) const noexcept;
         bool is_not(const lt_kind kind) const noexcept;
-        bool is_number() const noexcept;
 
-        static std::string lt_kind_to_string(const lt_kind &kind) noexcept;
+        static std::string lt_kind_to_string(const lt_kind kind) noexcept;
 
     private:
         std::size_t m_row;
@@ -71,14 +68,13 @@ namespace mxasm
         std::string m_lexeme;
         lt_kind     m_kind;
 
-        const static std::map<lt_kind, std::string> kind_string;
+        const static std::map<lt_kind, std::string> lt_kind_string;
 
-        friend std::ostream & operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind);
+        friend std::ostream &operator<<(std::ostream &os, const lexer_token::lt_kind &kind);
     };
 
 
-    typedef std::list<lexer_token>                         lexer_tokens;
-    std::ostream &operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind);
+    std::ostream &operator<<(std::ostream &os, const lexer_token::lt_kind &kind);
 }
 
 

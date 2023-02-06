@@ -62,30 +62,24 @@ bool               lexer_token::
 is_not(const lt_kind kind) const noexcept
 { return m_kind != kind; }
 
-bool               lexer_token::
-is_number() const noexcept
+
+std::string             lexer_token::
+lt_kind_to_string(const lt_kind kind) noexcept
+{ return lt_kind_string.at(kind); }
+
+
+const std::map<lt_kind, std::string>   lexer_token::
+lt_kind_string
 {
-    return m_kind == lt_kind::BINARY_CONSTANT  or m_kind == lt_kind::OCTAL_CONSTANT or
-           m_kind == lt_kind::DECIMAL_CONSTANT or m_kind == lt_kind::HEX_CONSTANT;
-}
-
-
-std::string lexer_token::
-lt_kind_to_string(const lt_kind &kind) noexcept
-{ return kind_string.at(kind); }
-
-
-const std::map<lt_kind, std::string> lexer_token::
-kind_string
-{
-    { lt_kind::IDENTIFIER,       "IDENTIFIER"          },
-    { lt_kind::COMMENT,          "COMMENT"             },
-    { lt_kind::DECIMAL_CONSTANT, "DECIMAL CONSTANT"    },
-    { lt_kind::OCTAL_CONSTANT,   "OCTAL CONSTANT"      },
-    { lt_kind::BINARY_CONSTANT,  "BINARY CONSTANT"     },
-    { lt_kind::HEX_CONSTANT,     "HEXADECIMAL CONSTANT"},
-    { lt_kind::DIRECTIVE,        "DIRECTIVE"           },
-    { lt_kind::STRING,           "STRING"              },
+    { lt_kind::COMMENT,           "COMMENT"             },
+    { lt_kind::DIRECTIVE,         "DIRECTIVE"           },
+    { lt_kind::STRING,            "STRING"              },
+    { lt_kind::HEX_CONSTANT,      "HEXADECIMAL CONSTANT"},
+    { lt_kind::BINARY_CONSTANT,   "BINARY CONSTANT"     },
+    { lt_kind::OCTAL_CONSTANT,    "OCTAL CONSTANT"      },
+    { lt_kind::DECIMAL_CONSTANT,  "DECIMAL CONSTANT"    },
+    { lt_kind::IDENTIFIER,        "IDENTIFIER"          },
+    { lt_kind::LABEL_DECLARATION, "LABEL DECLARATION"   },
 
     { lt_kind::COMMA,             "COMMA"             },
     { lt_kind::HASH,              "HASH"              },
@@ -101,8 +95,9 @@ kind_string
 };
 
 
-std::ostream &     mxasm::
-operator<<(std::ostream &os, const mxasm::lexer_token::lt_kind &kind) {
-    os << mxasm::lexer_token::kind_string.at(kind);
+std::ostream&           mxasm::
+operator<<(std::ostream &os, const lt_kind &kind)
+{
+    os << lexer_token::lt_kind_to_string(kind);
     return os;
 }
