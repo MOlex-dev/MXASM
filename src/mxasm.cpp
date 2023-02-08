@@ -10,10 +10,11 @@
 
 #include "../include/util.hpp"
 #include "../include/lexer.hpp"
+#include "../include/parser.hpp"
 
 //#define DEBUG_INPUT
-#define DEBUG_LEXER
-
+//#define DEBUG_LEXER
+#define DEBUG_PARSER
 
 
 
@@ -66,13 +67,17 @@ int main(int argc, char **argv)
         }
 #endif
 
+        parser lex_parser(lexed_tokens);
+        auto parsed_tokens = lex_parser.tokens();
+
+#ifdef DEBUG_PARSER
+
+
+#endif
 
 
 
 
-//
-//
-//
 //
 //        parser token_parser(lexed_tokens);
 //

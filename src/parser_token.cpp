@@ -1,170 +1,217 @@
 /*-------------------------------*
  |        MOlex Assembler        |
- |         Parser Token          |
+ |          Parser Token         |
  |                               |
  |       Author: MOlex-dev       |
  *-------------------------------*/
 
-#include <stdexcept>
-
 #include "../include/parser_token.hpp"
 
 using namespace mxasm;
-using pt_kind = parser_token::pt_kind;
 
 
 parser_token::
-parser_token(const pt_kind &kind, const std::string lexeme, const std::size_t row, const std::size_t column)
-    : m_kind {kind}, m_lexeme {lexeme}, m_row {row}, m_column {column} {}
+parser_token(lexer_token other)
+    : m_base_token {std::move(other)}
+{
+    m_row = m_base_token.row();
+    m_column = m_base_token.column();
+}
 
 
 
 
 
+lexer_token             parser_token::
+base_token() const noexcept
+{ return m_base_token; }
 
-
-
-
-
-
-
-
-
-
-
-std::size_t        parser_token::
-row() const noexcept
-{ return m_row; }
-
-std::size_t        parser_token::
-column() const noexcept
-{ return m_column; }
-
-std::string        parser_token::
-lexeme() const noexcept
-{ return m_lexeme; }
-
-pt_kind            parser_token::
+parser_token::pt_kind   parser_token::
 kind() const noexcept
 { return m_kind; }
 
-void               parser_token::
-row(const std::size_t row) noexcept
-{ m_row = row; }
+std::size_t             parser_token::
+v_number() const noexcept
+{ return m_v_number; }
 
-void               parser_token::
-column(const std::size_t column) noexcept
-{ m_column = column; }
+std::string             parser_token::
+v_lexeme() const noexcept
+{ return m_v_lexeme; }
 
-void               parser_token::
-lexeme(std::string lexeme) noexcept
-{ m_lexeme = lexeme; }
+std::size_t             parser_token::
+row() const noexcept
+{ return m_row; }
 
-void               parser_token::
-kind(const pt_kind kind) noexcept
-{ m_kind = kind; }
+std::size_t             parser_token::
+column() const noexcept
+{ return m_column; }
 
-bool               parser_token::
-is(const pt_kind &kind) const noexcept
-{ return m_kind == kind; }
+parser_token::pt_opcode parser_token::
+v_opcode() const noexcept
+{ return m_v_opcode; }
 
-bool               parser_token::
-is_not(const pt_kind &kind) const noexcept
-{ return m_kind != kind; }
+parser_token::pt_directive   parser_token::
+v_directive() const noexcept
+{ return m_v_directive; }
 
 
-std::map<pt_kind, std::string>    parser_token::
-pt_kind_str
+void                    parser_token::
+base_token(const lexer_token new_base_token)
+{ m_base_token = new_base_token; }
+
+void                    parser_token::
+kind(const pt_kind opcode)
+{ m_kind = opcode; }
+
+void                    parser_token::
+v_number(const std::size_t number)
+{ m_v_number = number; }
+
+void                    parser_token::
+v_lexeme(const std::string lexeme)
+{ m_v_lexeme = lexeme; }
+
+void                    parser_token::
+row(const std::size_t row_value)
+{ m_row = row_value; }
+
+void                    parser_token::
+column(const std::size_t column_value)
+{ m_column = column_value; }
+
+void                    parser_token::
+v_opcode(const pt_opcode opcode)
+{ m_v_opcode = opcode; }
+
+void                    parser_token::
+v_directive(const pt_directive directive)
+{ m_v_directive = directive; }
+
+
+std::string             parser_token::
+pt_kind_to_string(const pt_kind kind) noexcept
+{ return pt_kind_string.at(kind); }
+
+std::string             parser_token::
+pt_opcode_to_string(const pt_opcode opcode) noexcept
+{ return pt_opcode_string.at(opcode); }
+
+std::string             parser_token::
+pt_directive_to_string(const pt_directive directive) noexcept
+{ return pt_directive_string.at(directive); }
+
+
+bool                    parser_token::
+is_opcode_or_register(const std::string lexeme) noexcept
 {
-    { pt_kind::DIRECTIVE_CODE_POSITION, "DIRECTIVE CODE POSITION" },
-    { pt_kind::DIRECTIVE_MACRO,         "DIRECTIVE MACRO"         },
-    { pt_kind::DIRECTIVE_BYTE,          "DIRECTIVE BYTE"          },
-    { pt_kind::DIRECTIVE_WORD,          "DIRECTIVE WORD"          },
-
-    { pt_kind::REGISTER_X,              "REGISTER X"              },
-    { pt_kind::REGISTER_Y,              "REGISTER Y"              },
-    { pt_kind::LABEL_DECLARATION,       "LABEL DECLARATION"       },
-    { pt_kind::LABEL_CALL,              "LABEL CALL"              },
-    { pt_kind::IDENTIFIER,              "IDENTIFIER"              },
-    { pt_kind::NUMBER,                  "NUMBER"                  },
-    { pt_kind::STRING,                  "STRING"                  },
-
-    { pt_kind::COMMA,             "COMMA"             },
-    { pt_kind::HASH,              "HASH"              },
-    { pt_kind::LEFT_PARENTHESIS,  "LEFT PARENTHESIS"  },
-    { pt_kind::RIGHT_PARENTHESIS, "RIGHT PARENTHESIS" },
-    { pt_kind::LESS,              "LESS"              },
-    { pt_kind::GREATER,           "GREATER"           },
-    { pt_kind::EQUALS,            "EQUALS"            },
-
-    { pt_kind::ADC,  "ADC"  }, { pt_kind::AND,  "AND"  }, { pt_kind::ASL,  "ASL"  }, { pt_kind::BBR0, "BBR0" },
-    { pt_kind::BBR1, "BBR1" }, { pt_kind::BBR2, "BBR2" }, { pt_kind::BBR3, "BBR3" }, { pt_kind::BBR4, "BBR4" },
-    { pt_kind::BBR5, "BBR5" }, { pt_kind::BBR6, "BBR6" }, { pt_kind::BBR7, "BBR7" }, { pt_kind::BBS0, "BBS0" },
-    { pt_kind::BBS1, "BBS1" }, { pt_kind::BBS2, "BBS2" }, { pt_kind::BBS3, "BBS3" }, { pt_kind::BBS4, "BBS4" },
-    { pt_kind::BBS5, "BBS5" }, { pt_kind::BBS6, "BBS6" }, { pt_kind::BBS7, "BBS7" }, { pt_kind::BCC,  "BCC"  },
-    { pt_kind::BCS,  "BCS"  }, { pt_kind::BEQ,  "BEQ"  }, { pt_kind::BIT,  "BIT"  }, { pt_kind::BMI,  "BMI"  },
-    { pt_kind::BNE,  "BNE"  }, { pt_kind::BPL,  "BPL"  }, { pt_kind::BRA,  "BRA"  }, { pt_kind::BRK,  "BRK"  },
-    { pt_kind::BVC,  "BVC"  }, { pt_kind::BVS,  "BVS"  }, { pt_kind::CLC,  "CLC"  }, { pt_kind::CLD,  "CLD"  },
-    { pt_kind::CLI,  "CLI"  }, { pt_kind::CLV,  "CLV"  }, { pt_kind::CMP,  "CMP"  }, { pt_kind::CPY,  "CPY"  },
-    { pt_kind::CPX,  "CPX"  }, { pt_kind::DEC,  "DEC"  }, { pt_kind::DEX,  "DEX"  }, { pt_kind::DEY,  "DEY"  },
-    { pt_kind::EOR,  "EOR"  }, { pt_kind::INC,  "INC"  }, { pt_kind::INX,  "INX"  }, { pt_kind::INY,  "INY"  },
-    { pt_kind::JMP,  "JMP"  }, { pt_kind::JSR,  "JSR"  }, { pt_kind::LDA,  "LDA"  }, { pt_kind::LDX,  "LDX"  },
-    { pt_kind::LDY,  "LDY"  }, { pt_kind::LSR,  "LSR"  }, { pt_kind::NOP,  "NOP"  }, { pt_kind::ORA,  "ORA"  },
-    { pt_kind::PHA,  "PHA"  }, { pt_kind::PHP,  "PHP"  }, { pt_kind::PHX,  "PHX"  }, { pt_kind::PHY,  "PHY"  },
-    { pt_kind::PLA,  "PLA"  }, { pt_kind::PLP,  "PLP"  }, { pt_kind::PLX,  "PLX"  }, { pt_kind::PLY,  "PLY"  },
-    { pt_kind::RMB0, "RMB0" }, { pt_kind::RMB1, "RMB1" }, { pt_kind::RMB2, "RMB2" }, { pt_kind::RMB3, "RMB3" },
-    { pt_kind::RMB4, "RMB4" }, { pt_kind::RMB5, "RMB5" }, { pt_kind::RMB6, "RMB6" }, { pt_kind::RMB7, "RMB7" },
-    { pt_kind::ROL,  "ROL"  }, { pt_kind::ROR,  "ROR"  }, { pt_kind::RTI,  "RTI"  }, { pt_kind::RTS,  "RTS"  },
-    { pt_kind::SBC,  "SBC"  }, { pt_kind::SEC,  "SEC"  }, { pt_kind::SED,  "SED"  }, { pt_kind::SEI,  "SEI"  },
-    { pt_kind::SMB0, "SMB0" }, { pt_kind::SMB1, "SMB1" }, { pt_kind::SMB2, "SMB2" }, { pt_kind::SMB3, "SMB3" },
-    { pt_kind::SMB4, "SMB4" }, { pt_kind::SMB5, "SMB5" }, { pt_kind::SMB6, "SMB6" }, { pt_kind::SMB7, "SMB7" },
-    { pt_kind::STA,  "STA"  }, { pt_kind::STP,  "STP"  }, { pt_kind::STX,  "STX"  }, { pt_kind::STY,  "STY"  },
-    { pt_kind::STZ,  "STZ"  }, { pt_kind::TAX,  "TAX"  }, { pt_kind::TAY,  "TAY"  }, { pt_kind::TRB,  "TRB"  },
-    { pt_kind::TSB,  "TSB"  }, { pt_kind::TSX,  "TSX"  }, { pt_kind::TXA,  "TXA"  }, { pt_kind::TXS,  "TXS"  },
-    { pt_kind::TYA,  "TYA"  }, { pt_kind::WAI,  "WAI"  }
-};
-
-std::string        parser_token::
-pt_kind_to_str(const pt_kind &kind) noexcept
-{ return pt_kind_str.at(kind); }
-
-bool               parser_token::
-value_exists_in_opcodes(const std::string &str) noexcept
-{
-    for (const auto &[first, second] : pt_kind_str) {
-        if (second == to_upper(str)) {
-            return true;
-        }
+    std::string new_lexeme = to_upper(lexeme);
+    for (const auto &e : pt_opcode_string) {
+        if (e.second == new_lexeme) return true;
     }
     return false;
 }
 
-pt_kind            parser_token::
-get_opcode_name(const std::string &str)
+parser_token::pt_opcode parser_token::
+get_opcode_by_name(const std::string lexeme) noexcept
 {
-    for (const auto &[first, second] : pt_kind_str) {
-        if (second == to_upper(str)) {
-            return first;
+    std::string new_str = to_upper(lexeme);
+    for (const auto &[opcode, str] : pt_opcode_string) {
+        if (new_str == str) {
+            return opcode;
         }
     }
-    throw std::invalid_argument("There is no opcode with such name: " + to_upper(str) + "\n");
+    return pt_opcode::NOP;
 }
 
-bool               parser_token::
-is_opcode(const pt_kind &kind) noexcept
-{ return kind >= pt_kind::ADC and kind <= pt_kind::WAI; }
-
-bool               parser_token::
-is_directive(const pt_kind &kind) noexcept
+parser_token::pt_directive   parser_token::
+get_directive_by_name(const std::string lexeme) noexcept
 {
-    return    kind == pt_kind::DIRECTIVE_BYTE
-           or kind == pt_kind::DIRECTIVE_WORD
-           or kind == pt_kind::DIRECTIVE_CODE_POSITION;
+    std::string new_str = to_upper(lexeme);
+    for (const auto &[opcode, str] : pt_directive_string) {
+        if (new_str == str) {
+            return opcode;
+        }
+    }
 }
 
 
-std::ostream &     mxasm::
-operator<<(std::ostream &os, const mxasm::parser_token::pt_kind &kind) {
-    os << mxasm::parser_token::pt_kind_str.at(kind);
+const std::map<parser_token::pt_kind, std::string>    parser_token::
+pt_kind_string
+{
+    { pt_kind::NUMBER,            "NUMBER"            },
+    { pt_kind::LABEL_DECLARATION, "LABEL DECLARATION" },
+    { pt_kind::OPCODE,            "OPCODE"            },
+    { pt_kind::_IDENTIFIER,       "_IDENTIFIER"       },
+    { pt_kind::COMMA,             "COMMA"             },
+    { pt_kind::HASH,              "HASH"              },
+    { pt_kind::LESS,              "LESS"              },
+    { pt_kind::GREATER,           "GREATER"           },
+    { pt_kind::LEFT_PARENTHESIS,  "LEFT PARENTHESIS"  },
+    { pt_kind::RIGHT_PARENTHESIS, "RIGHT PARENTHESIS" },
+    { pt_kind::EQUALS,            "EQUALS"            },
+    { pt_kind::STRING,            "STRING"            },
+    { pt_kind::DIRECTIVE,         "DIRECTIVE"         },
+    { pt_kind::LABEL_CALL,        "LABEL CALL"        }
+};
+
+const std::map<parser_token::pt_opcode, std::string>  parser_token::
+pt_opcode_string
+{
+    { pt_opcode::ADC,  "ADC"  }, { pt_opcode::AND,  "AND"  }, { pt_opcode::ASL,  "ASL"  }, { pt_opcode::BBR0, "BBR0" },
+    { pt_opcode::BBR1, "BBR1" }, { pt_opcode::BBR2, "BBR2" }, { pt_opcode::BBR3, "BBR3" }, { pt_opcode::BBR4, "BBR4" },
+    { pt_opcode::BBR5, "BBR5" }, { pt_opcode::BBR6, "BBR6" }, { pt_opcode::BBR7, "BBR7" }, { pt_opcode::BBS0, "BBS0" },
+    { pt_opcode::BBS1, "BBS1" }, { pt_opcode::BBS2, "BBS2" }, { pt_opcode::BBS3, "BBS3" }, { pt_opcode::BBS4, "BBS4" },
+    { pt_opcode::BBS5, "BBS5" }, { pt_opcode::BBS6, "BBS6" }, { pt_opcode::BBS7, "BBS7" }, { pt_opcode::BCC,  "BCC"  },
+    { pt_opcode::BCS,  "BCS"  }, { pt_opcode::BEQ,  "BEQ"  }, { pt_opcode::BIT,  "BIT"  }, { pt_opcode::BMI,  "BMI"  },
+    { pt_opcode::BNE,  "BNE"  }, { pt_opcode::BPL,  "BPL"  }, { pt_opcode::BRA,  "BRA"  }, { pt_opcode::BRK,  "BRK"  },
+    { pt_opcode::BVC,  "BVC"  }, { pt_opcode::BVS,  "BVS"  }, { pt_opcode::CLC,  "CLC"  }, { pt_opcode::CLD,  "CLD"  },
+    { pt_opcode::CLI,  "CLI"  }, { pt_opcode::CLV,  "CLV"  }, { pt_opcode::CMP,  "CMP"  }, { pt_opcode::CPY,  "CPY"  },
+    { pt_opcode::CPX,  "CPX"  }, { pt_opcode::DEC,  "DEC"  }, { pt_opcode::DEX,  "DEX"  }, { pt_opcode::DEY,  "DEY"  },
+    { pt_opcode::EOR,  "EOR"  }, { pt_opcode::INC,  "INC"  }, { pt_opcode::INX,  "INX"  }, { pt_opcode::INY,  "INY"  },
+    { pt_opcode::JMP,  "JMP"  }, { pt_opcode::JSR,  "JSR"  }, { pt_opcode::LDA,  "LDA"  }, { pt_opcode::LDX,  "LDX"  },
+    { pt_opcode::LDY,  "LDY"  }, { pt_opcode::LSR,  "LSR"  }, { pt_opcode::NOP,  "NOP"  }, { pt_opcode::ORA,  "ORA"  },
+    { pt_opcode::PHA,  "PHA"  }, { pt_opcode::PHP,  "PHP"  }, { pt_opcode::PHX,  "PHX"  }, { pt_opcode::PHY,  "PHY"  },
+    { pt_opcode::PLA,  "PLA"  }, { pt_opcode::PLP,  "PLP"  }, { pt_opcode::PLX,  "PLX"  }, { pt_opcode::PLY,  "PLY"  },
+    { pt_opcode::RMB0, "RMB0" }, { pt_opcode::RMB1, "RMB1" }, { pt_opcode::RMB2, "RMB2" }, { pt_opcode::RMB3, "RMB3" },
+    { pt_opcode::RMB4, "RMB4" }, { pt_opcode::RMB5, "RMB5" }, { pt_opcode::RMB6, "RMB6" }, { pt_opcode::RMB7, "RMB7" },
+    { pt_opcode::ROL,  "ROL"  }, { pt_opcode::ROR,  "ROR"  }, { pt_opcode::RTI,  "RTI"  }, { pt_opcode::RTS,  "RTS"  },
+    { pt_opcode::SBC,  "SBC"  }, { pt_opcode::SEC,  "SEC"  }, { pt_opcode::SED,  "SED"  }, { pt_opcode::SEI,  "SEI"  },
+    { pt_opcode::SMB0, "SMB0" }, { pt_opcode::SMB1, "SMB1" }, { pt_opcode::SMB2, "SMB2" }, { pt_opcode::SMB3, "SMB3" },
+    { pt_opcode::SMB4, "SMB4" }, { pt_opcode::SMB5, "SMB5" }, { pt_opcode::SMB6, "SMB6" }, { pt_opcode::SMB7, "SMB7" },
+    { pt_opcode::STA,  "STA"  }, { pt_opcode::STP,  "STP"  }, { pt_opcode::STX,  "STX"  }, { pt_opcode::STY,  "STY"  },
+    { pt_opcode::STZ,  "STZ"  }, { pt_opcode::TAX,  "TAX"  }, { pt_opcode::TAY,  "TAY"  }, { pt_opcode::TRB,  "TRB"  },
+    { pt_opcode::TSB,  "TSB"  }, { pt_opcode::TSX,  "TSX"  }, { pt_opcode::TXA,  "TXA"  }, { pt_opcode::TXS,  "TXS"  },
+    { pt_opcode::TYA,  "TYA"  }, { pt_opcode::WAI,  "WAI"  },
+    { pt_opcode::REGISTER_X, "X" }, { pt_opcode::REGISTER_Y, "Y"}
+};
+
+const std::map<parser_token::pt_directive, std::string> parser_token::
+pt_directive_string
+{
+    { pt_directive::CODE_POSITION, "CODE POSITION" },
+    { pt_directive::MACRO,         "DEFINE"        },
+    { pt_directive::BYTE,          "BYTE"          },
+    { pt_directive::WORD,          "WORD"          }
+};
+
+
+std::ostream&           mxasm::
+operator<<(std::ostream &os, const parser_token::pt_kind &kind)
+{
+    os << parser_token::pt_kind_to_string(kind);
+    return os;
+}
+
+std::ostream&           mxasm::
+operator<<(std::ostream &os, const parser_token::pt_opcode &opcode)
+{
+    os << parser_token::pt_opcode_to_string(opcode);
+    return os;
+}
+
+std::ostream&           mxasm::
+operator<<(std::ostream &os, const parser_token::pt_directive &directive)
+{
+    os << parser_token::pt_directive_to_string(directive);
     return os;
 }

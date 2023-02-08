@@ -73,60 +73,22 @@ to_upper(const std::string &default_string)
     return res;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include <cmath>
-
-
-std::uint8_t       mxasm::
-math_repr_of_char(const char c)
+uint8_t                 mxasm::
+get_char_digit_value(const char c) noexcept
 {
-    if (c >= '0' and c <= '9') return c - '0';
-    if (c >= 'A' and c <= 'Z') return c - 'A' + 0xA;
-    if (c >= 'a' and c <= 'z') return c - 'a' + 0xA;
+    const char d = toupper(c);
+    if (d >= '0' and d <= '9') return d - '0';
+    if (d >= 'A' and d <= 'Z') return d - 'A' + 0xA;
     return 0;
 }
 
-char               mxasm::
-char_repr_of_num(const uint8_t n)
+uint64_t                mxasm::
+string_to_number(const std::string str, const uint8_t base) noexcept
 {
-    if (n >= 0 and n <= 9) return '0' + n;
-    if (n >= 10 and n <= 35) return 'a' + n - 10;
-    return 0;
-}
+    uint64_t result {0};
 
-std::string        mxasm::
-change_number_base(const std::string &number, const uint8_t def_base, const uint8_t new_base)
-{
-    uint64_t number_in_dec = 0;
-    for (std::size_t i = 0; i < number.length(); ++i) {
-        number_in_dec += math_repr_of_char(number.at(number.length() - 1 - i)) * std::pow(def_base, i);
+    for (std::size_t i = 0; i < str.length(); ++i) {
+        result += get_char_digit_value(str.at(str.length() - 1 - i)) * std::pow(base, i);
     }
-
-    std::string new_number;
-    do {
-        new_number.push_back(char_repr_of_num(number_in_dec % new_base));
-        number_in_dec /= new_base;
-    } while (number_in_dec);
-    std::reverse(new_number.begin(), new_number.end());
-    return new_number;
+    return result;
 }
-
-

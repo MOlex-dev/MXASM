@@ -1,6 +1,6 @@
 /*-------------------------------*
  |        MOlex Assembler        |
- |         Parser Token          |
+ |          Parser Token         |
  |                               |
  |       Author: MOlex-dev       |
  *-------------------------------*/
@@ -9,9 +9,9 @@
 
 #include <string>
 #include <map>
-#include <list>
 
 #include "../include/util.hpp"
+#include "../include/lexer_token.hpp"
 
 
 namespace mxasm
@@ -21,28 +21,28 @@ namespace mxasm
     public:
         enum class pt_kind
         {
-            DIRECTIVE_CODE_POSITION,
-            DIRECTIVE_MACRO,
-            DIRECTIVE_BYTE,
-            DIRECTIVE_WORD,
-
-            REGISTER_X,
-            REGISTER_Y,
-
-            LABEL_DECLARATION,
-            LABEL_CALL,
-            IDENTIFIER,           // Is macro or label name
             NUMBER,
+            LABEL_DECLARATION,
+            OPCODE,
             STRING,
+            DIRECTIVE,
+            LABEL_CALL,
+            _IDENTIFIER,
 
             COMMA,
             HASH,
-            LEFT_PARENTHESIS,
-            RIGHT_PARENTHESIS,
             LESS,
             GREATER,
+            LEFT_PARENTHESIS,
+            RIGHT_PARENTHESIS,
             EQUALS,
+        };
 
+        enum class pt_directive
+        { CODE_POSITION, BYTE, WORD, MACRO };
+
+        enum class pt_opcode
+        {
             ADC, AND, ASL,
             BBR0, BBR1, BBR2, BBR3, BBR4, BBR5, BBR6, BBR7,
             BBS0, BBS1, BBS2, BBS3, BBS4, BBS5, BBS6, BBS7,
@@ -62,41 +62,58 @@ namespace mxasm
             SMB0, SMB1, SMB2, SMB3, SMB4, SMB5, SMB6, SMB7,
             STA, STP, STX, STY, STZ,
             TAX, TAY, TRB, TSB, TSX, TXA, TXS, TYA,
-            WAI
+            WAI,
+            REGISTER_X, REGISTER_Y
         };
 
-        parser_token() = default;
-        parser_token(const pt_kind &kind, const std::string lexeme, const std::size_t row, const std::size_t column);
+        explicit parser_token(lexer_token other);
+
+        lexer_token  base_token() const noexcept;
+        pt_kind      kind() const noexcept;
+        std::size_t  v_number() const noexcept;
+        std::string  v_lexeme() const noexcept;
+        std::size_t  row() const noexcept;
+        std::size_t  column() const noexcept;
+        pt_opcode    v_opcode() const noexcept;
+        pt_directive v_directive() const noexcept;
+
+        void base_token(const lexer_token new_base_token);
+        void kind(const pt_kind opcode);
+        void v_number(const std::size_t number);
+        void v_lexeme(const std::string lexeme);
+        void row(const std::size_t row_value);
+        void column(const std::size_t column_value);
+        void v_opcode(const pt_opcode opcode);
+        void v_directive(const pt_directive directive);
 
 
-        std::size_t row() const noexcept;
-        std::size_t column() const noexcept;
-        std::string lexeme() const noexcept;
-        pt_kind     kind() const noexcept;
-
-        void row(const std::size_t row) noexcept;
-        void column(const std::size_t column) noexcept;
-        void lexeme(std::string lexeme) noexcept;
-        void kind(const pt_kind kind) noexcept;
-
-        bool               is(const pt_kind &kind) const noexcept;
-        bool               is_not(const pt_kind &kind) const noexcept;
-        static std::string pt_kind_to_str(const pt_kind &kind) noexcept;
-        static bool        value_exists_in_opcodes(const std::string &str) noexcept;
-        static pt_kind     get_opcode_name(const std::string &str);
-        static bool        is_opcode(const pt_kind &kind) noexcept;
-        static bool        is_directive(const pt_kind &kind) noexcept;
+        static std::string  pt_kind_to_string(const pt_kind kind) noexcept;
+        static std::string  pt_opcode_to_string(const pt_opcode opcode) noexcept;
+        static std::string  pt_directive_to_string(const pt_directive directive) noexcept;
+        static pt_opcode    get_opcode_by_name(const std::string lexeme) noexcept;
+        static pt_directive get_directive_by_name(const std::string lexeme) noexcept;
+        static bool         is_opcode_or_register(const std::string lexeme) noexcept;
 
     private:
-        pt_kind     m_kind   {};
-        std::size_t m_row    {};
-        std::size_t m_column {};
-        std::string m_lexeme {};
+        std::size_t m_row;
+        std::size_t m_column;
+        lexer_token m_base_token;
+        pt_kind     m_kind;
 
-        static std::map<pt_kind, std::string> pt_kind_str;
-        friend std::ostream &operator<<(std::ostream &os, const mxasm::parser_token::pt_kind &kind);
+        std::size_t  m_v_number;
+        std::string  m_v_lexeme;
+        pt_opcode    m_v_opcode;
+        pt_directive m_v_directive;
+
+
+
+        const static std::map<pt_kind, std::string>      pt_kind_string;
+        const static std::map<pt_opcode, std::string>    pt_opcode_string;
+        const static std::map<pt_directive, std::string> pt_directive_string;
+
     };
 
-    typedef std::list<parser_token>                        parser_tokens;
-    std::ostream &operator<<(std::ostream &os, const mxasm::parser_token::pt_kind &kind);
+    std::ostream &operator<<(std::ostream &os, const parser_token::pt_kind &kind);
+    std::ostream &operator<<(std::ostream &os, const parser_token::pt_opcode &kind);
+    std::ostream &operator<<(std::ostream &os, const parser_token::pt_directive &directive);
 }

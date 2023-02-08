@@ -1,4 +1,4 @@
-* = $2000
+* = $ff
 .define cpfa $3
 .define cpf 03
 
@@ -21,7 +21,7 @@ countApples: .word $0500
 do_:
 count:
 
-.define smx 3
+.define smx 3 15
 lda #smx
 .byte "message" ;this is message $
 lda 

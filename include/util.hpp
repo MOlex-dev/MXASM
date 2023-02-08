@@ -12,6 +12,7 @@
 #include <list>
 #include <fstream>
 #include <memory>
+#include <cmath>
 
 #include "exceptions/arguments_exception.hpp"
 
@@ -28,18 +29,8 @@ namespace mxasm
 
     std::string to_lower(const std::string &default_string);
     std::string to_upper(const std::string &default_string);
+
+    uint8_t  get_char_digit_value(const char c) noexcept;
+    uint64_t string_to_number(const std::string str, const uint8_t base) noexcept;
     
-}
-
-
-
-
-
-
-namespace mxasm
-{
-
-    std::uint8_t   math_repr_of_char(const char c);
-    char           char_repr_of_num(const uint8_t n);
-    std::string    change_number_base(const std::string &number, const uint8_t def_base, const uint8_t new_base);
 }
