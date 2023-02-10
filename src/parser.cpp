@@ -24,7 +24,7 @@ tokens()
     if (m_tokens.empty()) tokenize();
     return m_tokens;
 }
-
+#include <iomanip> //TODO: REMOVE THIS LIB
 
 void                    parser::
 tokenize()
@@ -96,10 +96,12 @@ tokenize()
         }
     }
 
+
+    // Check numbers
     index_and_replace_constants();
-
-
-
+    validate_numbers_size();
+    validate_code_pos_directives();
+    find_byte_lines();
 
 
 
@@ -108,28 +110,50 @@ tokenize()
     }
 
 
-    // TODO: FROM HERE  TODO: CLEAR CONSTANTS (DEFINES)
+    // TODO: FROM HERE
 
 
 
-    for (const auto &line : m_parser_tokens) {
-        std::cout << line.begin()->row() << ": ";
-        for (const auto &t : line) {
+
+
+    for (auto &line : m_parser_tokens) {
+        std::cout << std::setw(5) << std::dec << line.begin()->row() << ": ";
+
+        for (auto &t : line) {
             auto tk = t.kind();
-            std::cout << '{' << t.column() << ':' << tk << ':';
+
+            std::cout << '{' << tk << ':';
             if (tk == pt_kind::NUMBER) {
-                std::cout << t.v_number();
-            } else if (tk == pt_kind::OPCODE) {
+                std::cout <<  std::hex << t.v_number();
+            } else if (tk == pt_kind::DIRECTIVE) {
+                std::cout << t.v_directive();
+                if (t.v_directive() == parser_token::pt_directive::CODE_POSITION) {
+                    std::cout << '=' << std::hex << t.v_number();
+                } else if (t.v_directive() == parser_token::pt_directive::BYTE) {
+                    std::cout << '=' << std::right;
+                    const auto &bl = t.v_byteline();
+                    for (const auto &c : bl) {
+                        std::cout << std::setw(3) << std::hex << c;
+                    }
+                } else if (t.v_directive() == parser_token::pt_directive::WORD) {
+                    std::cout << '=' << std::right;
+                    const auto &bl = t.v_byteline();
+                    for (const auto &c : bl) {
+                        std::cout << std::setw(5) << std::hex << c;
+                    }
+                }
+            }
+
+
+            else if (tk == pt_kind::OPCODE) {
                 std::cout << t.v_opcode();
             } else if (tk == pt_kind::COMMA) {
             } else if (tk == pt_kind::STRING) {
                 std::cout << t.v_lexeme();
-            } else if (tk == pt_kind::DIRECTIVE) {
-                std::cout << t.v_directive();
             } else {
                 std::cout << t.v_lexeme();
             }
-            std::cout << '}' << ";  ";
+            std::cout << '}' << std::left << std::setw(4) << ',';
         }
         std::cout << '\n';
     }
@@ -140,12 +164,263 @@ tokenize()
     }
 }
 
-void index_and_replace_constants()
+void                    parser::
+validate_numbers_size()
 {
-    
+    for (const auto &line : m_parser_tokens) {
+        for (const auto &token : line) {
+            if (token.kind() == pt_kind::NUMBER) {
+                if (token.v_number() > 0xFF'FF) {
+                    add_exception("Error at [" + std::to_string(token.row()) + ", " + std::to_string(token.column())
+                                  + "]:\nNumber constant can't be greater than 0xFF\'FF");
+                }
+            }
+        }
+    }
+}
 
-    //TODO FROM THERE
+void                    parser::
+index_and_replace_constants()
+{
+    std::map<std::string, word_t> macro_table;
 
+    // Find and validate .define
+    for (auto &line : m_parser_tokens) {
+        auto iter = line.begin();
+        auto ln_end = line.end();
+        if (iter->kind() != pt_kind::DIRECTIVE) continue;
+        if (iter->v_directive() != parser_token::pt_directive::MACRO) continue;
+
+        std::string macro_name;
+        word_t      macro_value;
+
+
+        std::advance(iter, 1);
+        if (iter == ln_end) {
+            add_exception("Error at line " + std::to_string(line.cbegin()->row())
+                          + ":\nAn IDENTIFIER was expected, but NEW LINE was found");
+            continue;
+        }
+        if (iter->kind() != pt_kind::_IDENTIFIER) {
+            add_exception("Error at [" + std::to_string(iter->row()) + ", " + std::to_string(iter->column())
+                          + "]:\nAn IDENTIFIER was expected, but " + parser_token::pt_kind_to_string(iter->kind())
+                          + " was found");
+            continue;
+        }
+        if (macro_table.contains(to_lower(iter->v_lexeme()))) {
+            add_exception("Error at line " + std::to_string(iter->row()) + "\nRepeated declaration of macro: "
+                          + iter->v_lexeme());
+            continue;
+        }
+        macro_name = to_lower(iter->v_lexeme());
+
+        std::advance(iter, 1);
+        if (iter == ln_end) {
+            add_exception("Error at line " + std::to_string(line.cbegin()->row())
+                          + ":\nA NUMBER was expected, but NEW LINE was found");
+            continue;
+        }
+        if (iter->kind() != pt_kind::NUMBER) {
+            add_exception("Error at [" + std::to_string(iter->row()) + ", " + std::to_string(iter->column())
+                          + "]:\nA NUMBER was expected, but " + parser_token::pt_kind_to_string(iter->kind())
+                          + " was found");
+            continue;
+        }
+        if (iter->v_number() > 0xFF'FF) {
+            add_exception("Error at [" + std::to_string(iter->row()) + ", " + std::to_string(iter->column())
+                          + "]:\nMaximal CONSTANT size is 0xFF'FF");
+            continue;
+        }
+        macro_value = iter->v_number();
+
+        std::advance(iter, 1);
+        if (iter != ln_end) {
+            add_exception("Error at [" + std::to_string(iter->row()) + ", " + std::to_string(iter->column())
+                          + "]:\nA NEW LINE was expected, but " + parser_token::pt_kind_to_string(iter->kind())
+                          + " was found");
+            continue;
+        }
+        macro_table.emplace(macro_name, macro_value);
+    }
+
+    if (not m_exceptions.empty()) return;
+
+    // Remove macro declarations from parser tokens
+    erase_if(m_parser_tokens, [](auto &line) {
+        return line.begin()->kind() == pt_kind::DIRECTIVE and
+               line.begin()->v_directive() == parser_token::pt_directive::MACRO;
+    });
+
+    // Replace macros code
+    for (auto &line : m_parser_tokens) {
+        for (auto &token : line) {
+            if (token.kind() == pt_kind::_IDENTIFIER) {
+                std::string lex = to_lower(token.v_lexeme());
+                if (macro_table.contains(lex)) {
+                    token.kind(pt_kind::NUMBER);
+                    token.v_number(macro_table.at(lex));
+                } else {
+                    token.kind(pt_kind::LABEL_CALL);
+                }
+            }
+        }
+    }
+}
+
+void                    parser::
+validate_code_pos_directives()
+{
+    for (auto &line : m_parser_tokens) {
+        auto element = std::find_if(line.begin(), line.end(), [](const auto &token) {
+            return token.kind() == pt_kind::DIRECTIVE and
+                   token.v_directive() == parser_token::pt_directive::CODE_POSITION;
+        });
+
+        auto ast = element;
+        if (element == line.end()) continue;
+        auto ln_end = line.end();
+        std::advance(element, 1);
+
+        if (element == ln_end) {
+            add_exception("Error at line " + std::to_string(element->row())
+                          + ":\nA \'=\' was expected, but NEW LINE was found");
+            continue;
+        }
+        if (element->kind() != pt_kind::EQUALS) {
+            add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                          + "]:\nA \'=\' was expected, but " + parser_token::pt_kind_to_string(element->kind())
+                          + " was found");
+            continue;
+        }
+
+        std::advance(element, 1);
+        if (element == ln_end) {
+            add_exception("Error at line " + std::to_string(element->row())
+                          + ":\nA NUMBER was expected, but NEW LINE was found");
+            continue;
+        }
+        if (element->kind() != pt_kind::NUMBER) {
+            add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                          + "]:\nA NUMBER was expected, but " + parser_token::pt_kind_to_string(element->kind())
+                          + " was found");
+            continue;
+        }
+
+        ast->v_number(element->v_number());
+
+        std::advance(element, 1);
+
+        if (element != ln_end) {
+            add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                          + "]:\nA NEW LINE was expected, but " + parser_token::pt_kind_to_string(element->kind())
+                          + " was found");
+            continue;
+        }
+    }
+
+    // REMOVE "=$NUMBER"
+    for (auto &line : m_parser_tokens) {
+        auto element = std::find_if(line.begin(), line.end(), [](const auto &token) {
+            return token.kind() == pt_kind::DIRECTIVE and
+                   token.v_directive() == parser_token::pt_directive::CODE_POSITION;
+        });
+
+        if (element == line.end()) continue;
+        std::advance(element, 1);
+        line.erase(element, line.end());
+    }
+}
+
+void                   parser::
+find_byte_lines()
+{
+    for (auto &line: m_parser_tokens) {
+        auto element = std::find_if(line.begin(), line.end(), [](const auto &token) {
+            return token.kind() == pt_kind::DIRECTIVE and
+            (
+                token.v_directive() == parser_token::pt_directive::BYTE or
+                token.v_directive() == parser_token::pt_directive::WORD
+            );
+        });
+
+        auto opc = element;
+        if (element == line.end()) continue;
+
+        std::advance(element, 1);
+        if (element == line.end()) {
+            add_exception("Error at line " + std::to_string(opc->row())
+                          + ":\nA NUMBER or STRING was expected, but NEW LINE was found");
+            continue;
+        }
+
+//TODO HERE
+        std::vector<word_t> byte_line{};
+        do {
+            if (element->kind() != pt_kind::NUMBER and element->kind() != pt_kind::STRING) {
+                add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                              + "]:\nA NUMBER or STRING was expected, but " +
+                              parser_token::pt_kind_to_string(element->kind()) + " was found");
+                goto _end;
+            }
+            if (element->kind() == pt_kind::STRING) {
+                for (const auto &c : element->v_lexeme()) {
+                    byte_line.push_back(c);
+                }
+            } else {
+                if (opc->v_directive() == parser_token::pt_directive::BYTE and element->v_number() > 0xFF) {
+                    add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                                  + "]:\nConstant, defined by BYTE should not be greater than 0xFF");
+                    goto _end;
+                } else if (opc->v_directive() == parser_token::pt_directive::WORD and element->v_number() > 0xFF'FF) {
+                    add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                                  + "]:\nConstant, defined by WORD should not be greater than 0xFF'FF");
+                    goto _end;
+                }
+                byte_line.push_back(element->v_number());
+            }
+
+            std::advance(element, 1);
+            if (element == line.end()) {
+                goto _end;
+            }
+            if (element->kind() != pt_kind::COMMA) {
+                add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                              + "]:\nA COMMA was expected, but " +
+                              parser_token::pt_kind_to_string(element->kind()) + " was found");
+                goto _end;
+            }
+
+            std::advance(element, 1);
+            if (element == line.end()) {
+                add_exception("Error at line " + std::to_string(opc->row())
+                              + ":\nA NUMBER or STRING was expected, but NEW LINE was found");
+                goto _end;
+            }
+            if (element->kind() != pt_kind::NUMBER and element->kind() != pt_kind::STRING) {
+                add_exception("Error at [" + std::to_string(element->row()) + ", " + std::to_string(element->column())
+                              + "]:\nA NUMBER or STRING was expected, but " +
+                              parser_token::pt_kind_to_string(element->kind()) + " was found");
+                goto _end;
+            }
+
+        } while (element != line.end());
+_end:
+        opc->v_byteline(byte_line);
+    }
+
+    for (auto &line : m_parser_tokens) {
+        auto element = std::find_if(line.begin(), line.end(), [](const auto &token) {
+            return token.kind() == pt_kind::DIRECTIVE and
+                   (
+                           token.v_directive() == parser_token::pt_directive::BYTE or
+                           token.v_directive() == parser_token::pt_directive::WORD
+                   );
+        });
+
+        if (element == line.end()) continue;
+        std::advance(element, 1);
+        line.erase(element, line.end());
+    }
 }
 
 
@@ -172,26 +447,6 @@ add_exception(const std::string &exception) noexcept
 
 
 
-//using st_kind = mxasm::serializable_token::st_kind;
-//using st_directive = mxasm::serializable_token::st_directive;
-//using st_command = mxasm::serializable_token::st_command;
-//using st_adr_mode = mxasm::serializable_token::st_cmd_ad_mode;
-
-//void               parser::
-//tokenize()
-//{
-//    std::string exception_msg;
-//
-//    try { find_and_replace_macros(); }
-//    catch (const std::exception &ex) {
-//        exception_msg.append(std::string("Macro declaration error:\n") + ex.what());
-//    }
-//
-//    try { validate_labels(); }
-//    catch (const std::exception &ex) {
-//        exception_msg.append(std::string("Label error:\n") + ex.what());
-//    }
-//
 //    std::size_t current_row {};
 //    // Check if row starts not from directive, label declaration, or opcode
 //    for (const auto &token : m_input_tokens) {
@@ -247,50 +502,7 @@ add_exception(const std::string &exception) noexcept
 //
 //            //TODO: WORK HERE (VALIDATE .byte .word strings and byte sequences)
 //            // TODO: AFTER BYTES WE CAN HAVE ALSO LABEL
-//
-//
-//            case pt_kind::DIRECTIVE_BYTE:
-//
-//                break;
-//            case pt_kind::DIRECTIVE_WORD:
-//
-//                break;
-//            case pt_kind::DIRECTIVE_CODE_POSITION:
-//                if (m_current == m_current_end) {
-//                    exception_msg.append(std::string("Error at line ") + std::to_string(current_row)
-//                                         + ". An \'=\' was expected, but NEW LINE was found\n");
-//                    continue;
-//                }
-//                if (m_current->is_not(pt_kind::EQUALS)) {
-//                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                        + std::to_string(m_current->column()) + "]: An '\'=\' was expected, but "
-//                                        + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
-//                    continue;
-//                }
-//                std::advance(m_current, 1);
-//                if (m_current == m_current_end) {
-//                    exception_msg.append(std::string("Error at line ") + std::to_string(current_row)
-//                                         + ". An NUMBER was expected, but NEW LINE was found\n");
-//                    continue;
-//                }
-//                if (m_current->is_not(pt_kind::NUMBER)) {
-//                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                         + std::to_string(m_current->column()) + "]: A NUMBER was expected, but "
-//                                         + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
-//                    continue;
-//                }
-//                std::advance(m_current, 1);
-//                if (m_current != m_current_end) {
-//                    exception_msg.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                         + std::to_string(m_current->column()) + "]: A NEW LINE was expected, but "
-//                                         + parser_token::pt_kind_to_str(m_current->kind()) + " was found\n");
-//                    continue;
-//                }
-//                outer_token.kind(st_kind::DIRECTIVE);
-//                outer_token.directive(st_directive::CODE_POSITION);
-//                break;
-//        }
-//        m_out_tokens.push_back(outer_token);
+
 //    }
 //    if (not exception_msg.empty()) {
 //        throw std::domain_error(exception_msg);
@@ -312,16 +524,7 @@ add_exception(const std::string &exception) noexcept
 //    }
 //}
 //
-//parser_token::pt_kind   parser::
-//check_directive_type(const std::string &lexeme) const
-//{
-//    std::string tmp = to_lower(lexeme);
-//    if (tmp == "*")       return pt_kind::DIRECTIVE_CODE_POSITION;
-//    if (tmp == ".define") return pt_kind::DIRECTIVE_MACRO;
-//    if (tmp == ".byte")   return pt_kind::DIRECTIVE_BYTE;
-//    if (tmp == ".word")   return pt_kind::DIRECTIVE_WORD;
-//    throw std::domain_error(std::string("There is no directive with such name: ") + lexeme + "\n");
-//}
+
 //
 //parser_token::pt_kind   parser::
 //check_identifier_type(const std::string &lexeme) const
@@ -337,101 +540,6 @@ add_exception(const std::string &exception) noexcept
 //check_opcode_name(const std::string &lexeme) const noexcept
 //{ return parser_token::get_opcode_name(lexeme); }
 
-//
-//
-//void               parser::
-//find_and_replace_macros()
-//{
-//    std::map<std::string, std::string> macros_values;
-//    std::list<parser_tokens> tokens_row;
-//    std::size_t current_row = 0;
-//
-//    // Generate list of command rows
-//    for (const auto &e : m_input_tokens) {
-//        if (e.row() == current_row) {
-//            tokens_row.rbegin()->push_back(e);
-//            continue;
-//        }
-//        current_row = e.row();
-//        tokens_row.push_back({e});
-//    }
-//
-//    std::string exception_string;
-//
-//    // Find macro
-//    for (const auto &line : tokens_row) {
-//        auto iter = line.begin();
-//        current_row = iter->row();
-//        std::string macro_name, macro_value;
-//
-//        if (iter->kind() != pt_kind::DIRECTIVE_MACRO) continue;
-//        std::advance(iter, 1);
-//        if (iter == line.end()) {
-//            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
-//                                    + std::string(". An IDENTIFIER was expected, but NEW LINE was found\n"));
-//            continue;
-//        }
-//        if (iter->kind() != pt_kind::IDENTIFIER) {
-//            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                  + std::to_string(iter->column()) + "]: An IDENTIFIER was expected, but "
-//                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
-//            continue;
-//        }
-//        macro_name = iter->lexeme();
-//        std::advance(iter, 1);
-//        if (iter == line.end()) {
-//            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
-//                                    + std::string(". A NUMBER was expected, but NEW LINE was found\n"));
-//            continue;
-//        }
-//        if (iter->kind() != pt_kind::NUMBER) {
-//            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                  + std::to_string(iter->column()) + "]: A NUMBER was expected, but "
-//                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
-//            continue;
-//        }
-//        macro_value = iter->lexeme();
-//        std::advance(iter, 1);
-//        if (iter != line.end()) {
-//            exception_string.append(std::string("Error at [") + std::to_string(current_row) + ", "
-//                                  + std::to_string(iter->column()) + "]: A NEW LINE was expected, but "
-//                                  + parser_token::pt_kind_to_str(iter->kind()) + " was found\n");
-//            continue;
-//        }
-//
-//        // Add to macro list
-//        if (macros_values.contains(macro_name)) {
-//            exception_string.append(std::string("Error at line ") + std::to_string(current_row)
-//                                  + ": Macro with name " + macro_name + " already exists\n");
-//            continue;
-//        }
-//        macros_values.emplace(to_lower(macro_name), macro_value);
-//    }
-//    if (not exception_string.empty()) {
-//        throw std::domain_error(exception_string);
-//    }
-//
-//    // Replace macro declaration and change macro using tokens
-//    auto rem_iter = std::remove_if(tokens_row.begin(), tokens_row.end(), [](auto &row) {
-//        if (row.begin()->kind() == pt_kind::DIRECTIVE_MACRO) return true;
-//        return false;
-//    });
-//    tokens_row.erase(rem_iter, tokens_row.end());
-//
-//    m_input_tokens.clear();
-//    for (auto &line : tokens_row) {
-//        for (auto &token : line) {
-//            if (token.is(pt_kind::IDENTIFIER)) {
-//                if (macros_values.contains(to_lower(token.lexeme()))) {
-//                    token.lexeme(macros_values[to_lower(token.lexeme())]);
-//                    token.kind(pt_kind::NUMBER);
-//                }
-//            }
-//            m_input_tokens.push_back(token);
-//        }
-//    }
-//}
-//
 //void               parser::
 //validate_labels()
 //{
@@ -484,16 +592,3 @@ add_exception(const std::string &exception) noexcept
 //        throw std::domain_error(exception_msg);
 //    }
 //}
-//
-//
-//bool               parser::
-//is_register_name(const std::string &str) const noexcept
-//{ return str == "x" or str == "y"; }
-//
-//bool               parser::
-//is_opcode(const std::string &str) const noexcept
-//{ return parser_token::value_exists_in_opcodes(str); }
-//
-//bool               parser::
-//is_label_declaration(const std::string &str) const noexcept
-//{ return *str.rbegin() == ':'; }

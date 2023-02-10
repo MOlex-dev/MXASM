@@ -22,20 +22,26 @@ namespace mxasm
         enum class pt_kind
         {
             NUMBER,
+
+            EQUALS,
+
+
+
+
+            DIRECTIVE,
+
             LABEL_DECLARATION,
             OPCODE,
             STRING,
-            DIRECTIVE,
             LABEL_CALL,
             _IDENTIFIER,
 
+            LEFT_PARENTHESIS,
+            RIGHT_PARENTHESIS,
             COMMA,
             HASH,
             LESS,
             GREATER,
-            LEFT_PARENTHESIS,
-            RIGHT_PARENTHESIS,
-            EQUALS,
         };
 
         enum class pt_directive
@@ -68,14 +74,15 @@ namespace mxasm
 
         explicit parser_token(lexer_token other);
 
-        lexer_token  base_token() const noexcept;
-        pt_kind      kind() const noexcept;
-        std::size_t  v_number() const noexcept;
-        std::string  v_lexeme() const noexcept;
-        std::size_t  row() const noexcept;
-        std::size_t  column() const noexcept;
-        pt_opcode    v_opcode() const noexcept;
-        pt_directive v_directive() const noexcept;
+        lexer_token          base_token() const noexcept;
+        pt_kind              kind() const noexcept;
+        std::size_t          v_number() const noexcept;
+        std::string          v_lexeme() const noexcept;
+        std::size_t          row() const noexcept;
+        std::size_t          column() const noexcept;
+        pt_opcode            v_opcode() const noexcept;
+        pt_directive         v_directive() const noexcept;
+        std::vector<word_t> &v_byteline() noexcept;
 
         void base_token(const lexer_token new_base_token);
         void kind(const pt_kind opcode);
@@ -85,7 +92,7 @@ namespace mxasm
         void column(const std::size_t column_value);
         void v_opcode(const pt_opcode opcode);
         void v_directive(const pt_directive directive);
-
+        void v_byteline(std::vector<word_t> &vc) noexcept;
 
         static std::string  pt_kind_to_string(const pt_kind kind) noexcept;
         static std::string  pt_opcode_to_string(const pt_opcode opcode) noexcept;
@@ -100,10 +107,11 @@ namespace mxasm
         lexer_token m_base_token;
         pt_kind     m_kind;
 
-        std::size_t  m_v_number;
-        std::string  m_v_lexeme;
-        pt_opcode    m_v_opcode;
-        pt_directive m_v_directive;
+        std::size_t         m_v_number;
+        std::string         m_v_lexeme;
+        pt_opcode           m_v_opcode;
+        pt_directive        m_v_directive;
+        std::vector<word_t> m_v_byteline;
 
 
 

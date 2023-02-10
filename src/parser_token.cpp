@@ -54,6 +54,10 @@ parser_token::pt_directive   parser_token::
 v_directive() const noexcept
 { return m_v_directive; }
 
+std::vector<word_t>&    parser_token::
+v_byteline() noexcept
+{ return m_v_byteline; }
+
 
 void                    parser_token::
 base_token(const lexer_token new_base_token)
@@ -86,6 +90,10 @@ v_opcode(const pt_opcode opcode)
 void                    parser_token::
 v_directive(const pt_directive directive)
 { m_v_directive = directive; }
+
+void                    parser_token::
+v_byteline(std::vector<word_t> &vc) noexcept
+{ m_v_byteline = std::move(vc); }
 
 
 std::string             parser_token::
@@ -141,7 +149,7 @@ pt_kind_string
     { pt_kind::NUMBER,            "NUMBER"            },
     { pt_kind::LABEL_DECLARATION, "LABEL DECLARATION" },
     { pt_kind::OPCODE,            "OPCODE"            },
-    { pt_kind::_IDENTIFIER,       "_IDENTIFIER"       },
+    { pt_kind::_IDENTIFIER,       "IDENTIFIER"       },
     { pt_kind::COMMA,             "COMMA"             },
     { pt_kind::HASH,              "HASH"              },
     { pt_kind::LESS,              "LESS"              },

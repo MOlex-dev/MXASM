@@ -33,6 +33,9 @@ namespace mxasm
         exception_list                     m_exceptions;
 
         void tokenize();
+        void validate_numbers_size();
+        void validate_code_pos_directives();
+        void find_byte_lines();
         void index_and_replace_constants();
 
         void organize_lexer_tokens(std::list<lexer_token> &lexed_tokens);
