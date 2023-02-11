@@ -12,11 +12,11 @@ lda #(X), cpfa
 adc 9750
     dosmth:
     .byte $5
-countApples: .word $0500
+countApples:
 .byte "this 94u *&#Y 9 is", %11
 .byte "mystr"
 do_:
-count:
+;count: X
 .define smx 3
 lda #sMx
 .byte $00,$05,$00,$05,$00,$00,$00,$00
@@ -24,10 +24,12 @@ lda #sMx
 lda 
 lda
 ;.word $fe4a, $0050
-ldx smx
+ldx countApples
 .byte $5
- .word $fe4a
-label:    count:
+ .word $fe4a, $3
+ lda X
+ ldx "f"
+somemearK:
 ;do $0x
     ;    write herehe
 lda 034

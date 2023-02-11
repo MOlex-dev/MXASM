@@ -64,10 +64,6 @@ frame_buffer:
 *=1536
 jmp		start
 
-screen_item_x:		.byte $00
-screen_item_y:		.byte $00
-screen_item_idx:	.byte $00
-
 ; Screen RAM, 64 Bytes
 screen_ram:
 .byte $0f,$0f,$0f,$0f,$0f,$0f,$0f,$0f

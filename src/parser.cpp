@@ -97,27 +97,57 @@ tokenize()
     }
 
 
-    // Check numbers
+    // Check directives
     index_and_replace_constants();
     validate_numbers_size();
     validate_code_pos_directives();
     find_byte_lines();
 
+    if (not m_exceptions.empty()) {
+        throw std::move(m_exceptions);
+    }
 
+    // Rows can start from directive, opcode or label declaration
+    for (const auto &l : m_parser_tokens) {
+        switch (l.begin()->kind()) {
+            case pt_kind::LABEL_DECLARATION:
+            case pt_kind::DIRECTIVE:
+                continue;
+            case pt_kind::OPCODE:
+                if (l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_X or
+                    l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_Y) {
+                    add_exception("Error at line " + std::to_string(l.begin()->row()) + ":\nLine can starts from " \
+                                  "DIRECTIVE, LABEL DECLARATION, or OPCODE, but "
+                                  + parser_token::pt_opcode_to_string(l.begin()->v_opcode())
+                                  + " was found");
+                }
+                continue;
+            default:
+                add_exception("Error at line " + std::to_string(l.begin()->row()) + ":\nLine can starts from " \
+                              "DIRECTIVE, LABEL DECLARATION, or OPCODE, but "
+                              + parser_token::pt_kind_to_string(l.begin()->kind()) + " was found");
+                continue;
+        }
+    }
 
     if (not m_exceptions.empty()) {
         throw std::move(m_exceptions);
     }
 
+    validate_and_replace_labels();
+    if (not m_exceptions.empty()) {
+        throw std::move(m_exceptions);
+    }
 
-    // TODO: FROM HERE
+    parser_tokens_to_serializable();
+    // TODO:
 
 
 
 
 
     for (auto &line : m_parser_tokens) {
-        std::cout << std::setw(5) << std::dec << line.begin()->row() << ": ";
+        std::cout << std::right << std::setw(5) << std::dec << line.begin()->row() << ": ";
 
         for (auto &t : line) {
             auto tk = t.kind();
@@ -142,6 +172,8 @@ tokenize()
                         std::cout << std::setw(5) << std::hex << c;
                     }
                 }
+            } else if (tk == pt_kind::LABEL_DECLARATION or tk == pt_kind::LABEL_CALL) {
+                std::cout << '@' << t.v_number();
             }
 
 
@@ -353,7 +385,6 @@ find_byte_lines()
             continue;
         }
 
-//TODO HERE
         std::vector<word_t> byte_line{};
         do {
             if (element->kind() != pt_kind::NUMBER and element->kind() != pt_kind::STRING) {
@@ -423,6 +454,62 @@ _end:
     }
 }
 
+void                    parser::
+validate_and_replace_labels()
+{
+    std::map<std::string, std::size_t> label_indexes;
+
+    std::size_t label_id {0};
+    for (auto &line : m_parser_tokens) {
+        if (line.begin()->kind() != pt_kind::LABEL_DECLARATION) continue;
+
+        std::string label_name = to_lower(line.begin()->v_lexeme());
+        if (label_indexes.contains(label_name)) {
+            add_exception("Error at line " + std::to_string(line.begin()->row())
+                          + ":\nLabel " + line.begin()->v_lexeme() + " is actually exists");
+            continue;
+        }
+        line.begin()->v_number(label_id);
+        label_indexes.emplace(label_name, label_id);
+        ++label_id;
+
+        auto ti = std::next(line.begin());
+        if (ti != line.end() and ti->kind() != pt_kind::DIRECTIVE) {
+            if (ti->kind() != pt_kind::OPCODE) {
+                add_exception("Error at line " + std::to_string(line.begin()->row())
+                              + ":\nExpected NEW LINE, OPCODE, or DIRECTIVE, but "
+                              + parser_token::pt_kind_to_string(ti->kind()) + " was found");
+            }
+            if (ti->v_opcode() == pt_opcode::REGISTER_X or ti->v_opcode() == pt_opcode::REGISTER_Y) {
+                add_exception("Error at [" + std::to_string(ti->row()) + ", "
+                              + std::to_string(ti->column()) + "]: Expected NEW LINE, OPCODE, or DIRECTIVE, but " \
+                              "REGISTER NAME was found");
+            }
+        }
+    }
+
+    for (auto &line : m_parser_tokens) {
+        for (auto &token : line) {
+            if (token.kind() == pt_kind::LABEL_CALL) {
+                std::string lex = to_lower(token.v_lexeme());
+                if (label_indexes.contains(lex)) {
+                    token.v_number(label_indexes.at(lex));
+                    continue;
+                }
+                add_exception("Error at [" + std::to_string(token.row()) + ", " + std::to_string(token.column())
+                              + "]: Non-existed label call\n" + token.v_lexeme());
+            }
+        }
+    }
+}
+
+void                    parser::
+parser_tokens_to_serializable()
+{
+
+    //TODO HERE
+}
+
 
 void                    parser::
 organize_lexer_tokens(std::list<lexer_token> &lexed_tokens)
@@ -442,153 +529,3 @@ organize_lexer_tokens(std::list<lexer_token> &lexed_tokens)
 void                    parser::
 add_exception(const std::string &exception) noexcept
 { m_exceptions.emplace_back(new parser_exception(exception)); }
-
-
-
-
-
-//    std::size_t current_row {};
-//    // Check if row starts not from directive, label declaration, or opcode
-//    for (const auto &token : m_input_tokens) {
-//        if (current_row == token.row()) continue;
-//        current_row = token.row();
-//        if (token.is_not(pt_kind::LABEL_DECLARATION) and
-//            (not parser_token::is_opcode(token.kind())) and
-//            (not parser_token::is_directive(token.kind()))) {
-//            exception_msg.append(std::string("Error at [") + std::to_string(token.row()) + ", "
-//                               + std::to_string(token.column()) + "]: DIRECTIVE, LABEL DECLARATION or OPCODE was " \
-//                                 "expected, but " + parser_token::pt_kind_to_str(token.kind()) + " was found:\n"
-//                               + token.lexeme() + '\n');
-//        }
-//    }
-//    try { parse_tokens(); }
-//    catch (const std::exception &ex) {
-//        exception_msg.append(std::string("Parsing error:\n") + ex.what());
-//    }
-//
-//    if (not exception_msg.empty()) {
-//        throw std::domain_error(exception_msg);
-//    }
-//}
-//
-//void               parser::
-//parse_tokens()
-//{
-//    std::list<parser_tokens> tokens_row;
-//    std::size_t current_row = 0;
-//
-//    // Generate list of command rows
-//    for (const auto &e : m_input_tokens) {
-//        if (e.row() == current_row) {
-//            tokens_row.rbegin()->push_back(e);
-//            continue;
-//        }
-//        current_row = e.row();
-//        tokens_row.push_back({ e });
-//    }
-//
-//    std::string exception_msg;
-//
-//    for (const auto &line : tokens_row) {
-//        if (m_current_end != line.cend()) {
-//            m_current = line.cbegin();
-//            m_current_end = line.cend();
-//            current_row = line.cbegin()->row();
-//        }
-//
-//        serializable_token outer_token;
-//        switch (get().kind()) {
-//
-//
-//            //TODO: WORK HERE (VALIDATE .byte .word strings and byte sequences)
-//            // TODO: AFTER BYTES WE CAN HAVE ALSO LABEL
-
-//    }
-//    if (not exception_msg.empty()) {
-//        throw std::domain_error(exception_msg);
-//    }
-//}
-
-//std::string             parser::
-//parse_number_to_hex(const lexer_token &token) const noexcept
-//{
-//    switch (token.kind()) {
-//        case lt_kind::HEX_CONSTANT:
-//            return token.lexeme().substr(1);
-//        case lt_kind::BINARY_CONSTANT:
-//            return change_number_base(token.lexeme().substr(1), 2, 16);
-//        case lt_kind::OCTAL_CONSTANT:
-//            return change_number_base(token.lexeme().substr(1), 8, 16);
-//        case lt_kind::DECIMAL_CONSTANT:
-//            return change_number_base(token.lexeme(), 10, 16);
-//    }
-//}
-//
-
-//
-//parser_token::pt_kind   parser::
-//check_identifier_type(const std::string &lexeme) const
-//{
-//    std::string tmp = to_lower(lexeme);
-//    if (is_register_name(tmp))     return check_register_name(tmp);
-//    if (is_opcode(tmp))            return check_opcode_name(tmp);
-//    if (is_label_declaration(tmp)) return pt_kind::LABEL_DECLARATION;
-//    return pt_kind::IDENTIFIER;
-//}
-//
-//pt_kind            parser::
-//check_opcode_name(const std::string &lexeme) const noexcept
-//{ return parser_token::get_opcode_name(lexeme); }
-
-//void               parser::
-//validate_labels()
-//{
-//    std::map<std::string, std::string> labels;
-//    std::size_t                        current_row = 0;
-//
-//    std::string exception_msg;
-//    std::size_t label_number {0};
-//
-//    for (auto &token : m_input_tokens) {
-//        if (token.row() == current_row) continue;
-//        current_row = token.row();
-//
-//        if (token.is(pt_kind::LABEL_DECLARATION)) {
-//            std::string label_name = to_lower(token.lexeme().substr(0, token.lexeme().length() - 1));
-//            if (labels.contains(label_name)) {
-//                exception_msg.append(std::string("Error at line ") + std::to_string(token.row())
-//                                   + ": Label \'" + token.lexeme() + "\' already exists\n");
-//                continue;
-//            }
-//
-//            // Add to macro list
-//            auto new_label_name = std::string("@") + std::to_string(label_number++);
-//            labels.emplace(label_name, new_label_name);
-//            token.lexeme(new_label_name);
-//        }
-//    }
-//
-//    current_row = 0;
-//    for (auto &token : m_input_tokens) {
-//        if (token.row() != current_row) {
-//            current_row = token.row();
-//            continue;
-//        }
-//
-//        if (token.is_not(pt_kind::IDENTIFIER)) continue;
-//        std::string label_name = to_lower(token.lexeme());
-//
-//        if (not labels.contains(label_name)) {
-//            exception_msg.append(std::string("Error at [") + std::to_string(token.row()) + ", "
-//                               + std::to_string(token.column()) + "]: Label or macro \'" + token.lexeme()
-//                               + "\' doesn't exist\n");
-//            continue;
-//        }
-//
-//        token.lexeme(labels[label_name]);
-//        token.kind(pt_kind::LABEL_CALL);
-//    }
-//    if (not exception_msg.empty()) {
-//        throw std::domain_error(exception_msg);
-//    }
-//}

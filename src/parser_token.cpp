@@ -102,7 +102,16 @@ pt_kind_to_string(const pt_kind kind) noexcept
 
 std::string             parser_token::
 pt_opcode_to_string(const pt_opcode opcode) noexcept
-{ return pt_opcode_string.at(opcode); }
+{
+    switch (opcode) {
+        case pt_opcode::REGISTER_X:
+            return "REGISTER X";
+        case pt_opcode::REGISTER_Y:
+            return "REGISTER Y";
+        default:
+            return pt_opcode_string.at(opcode);
+    }
+}
 
 std::string             parser_token::
 pt_directive_to_string(const pt_directive directive) noexcept

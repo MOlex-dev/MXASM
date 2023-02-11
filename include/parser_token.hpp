@@ -22,20 +22,14 @@ namespace mxasm
         enum class pt_kind
         {
             NUMBER,
-
-            EQUALS,
-
-
-
-
             DIRECTIVE,
-
+            STRING,
+            _IDENTIFIER,
             LABEL_DECLARATION,
             OPCODE,
-            STRING,
             LABEL_CALL,
-            _IDENTIFIER,
 
+            EQUALS,
             LEFT_PARENTHESIS,
             RIGHT_PARENTHESIS,
             COMMA,
