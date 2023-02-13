@@ -57,22 +57,40 @@ serialize()
         if (op.kind() == st_kind::OPCODE) {
             switch (op.command()) {
                 case st_command::BRK_stk:
-
                 case st_command::CLC_imp:
                 case st_command::CLD_imp:
                 case st_command::CLI_imp:
                 case st_command::CLV_imp:
-
+                case st_command::DEX_imp:
+                case st_command::DEY_imp:
+                case st_command::INX_imp:
+                case st_command::INY_imp:
                 case st_command::NOP_imp:
-
+                case st_command::PHA_stk:
+                case st_command::PHP_stk:
+                case st_command::PHX_stk:
+                case st_command::PHY_stk:
+                case st_command::PLA_stk:
+                case st_command::PLP_stk:
+                case st_command::PLX_stk:
+                case st_command::PLY_stk:
+                case st_command::RTS_stk:
+                case st_command::RTI_stk:
+                case st_command::SEC_imp:
+                case st_command::SED_imp:
+                case st_command::SEI_imp:
+                case st_command::STP_imp:
+                case st_command::TAX_imp:
+                case st_command::TAY_imp:
+                case st_command::TSX_imp:
+                case st_command::TXA_imp:
+                case st_command::TXS_imp:
+                case st_command::TYA_imp:
+                case st_command::WAI_imp:
                     auto code = static_cast<byte_t>(op.command());
                     write_byte_to_memory(code);
+                    break;
             }
-
-
-
-
-
             continue;
         }
     }

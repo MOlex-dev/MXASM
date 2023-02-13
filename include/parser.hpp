@@ -47,19 +47,12 @@ namespace mxasm
 
 
         void d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
-        void d_byte(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
-        void d_word(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
+        void d_byteline(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+                        serializable_token::st_kind dir_type);
 
-        void o_brk(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
-
-
-        void o_clc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
-        void o_cld(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
-        void o_cli(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
-        void o_clv(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+        void o_opc_imp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+                       serializable_token::st_command opc) noexcept;
 
 
-
-        void o_nop(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
     };
 }

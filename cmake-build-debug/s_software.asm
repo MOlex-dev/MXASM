@@ -1,4 +1,4 @@
-brk
-clv
-brk
-cli
+sec
+sed
+sei
+stp

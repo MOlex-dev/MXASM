@@ -474,22 +474,47 @@ parser_tokens_to_serializable()
         if (iter->kind() == pt_kind::DIRECTIVE) {
             switch (iter->v_directive()) {
                 case parser_token::pt_directive::CODE_POSITION: d_code_pos(iter, iend); break;
-                case parser_token::pt_directive::BYTE: d_byte(iter, iend); break;
-                case parser_token::pt_directive::WORD: d_word(iter, iend); break;
+                case parser_token::pt_directive::BYTE: d_byteline(iter, iend, st_kind::BYTE); break;
+                case parser_token::pt_directive::WORD: d_byteline(iter, iend, st_kind::WORD); break;
             }
             continue;
         }
 
         if (iter->kind() == pt_kind::OPCODE) {
             switch (iter->v_opcode()) {
-                case pt_opcode::BRK: o_brk(iter, iend); break;
+                case pt_opcode::BRK: o_opc_imp(iter, iend, serializable_token::st_command::BRK_stk); break;
+                case pt_opcode::CLC: o_opc_imp(iter, iend, serializable_token::st_command::CLC_imp); break;
+                case pt_opcode::CLD: o_opc_imp(iter, iend, serializable_token::st_command::CLD_imp); break;
+                case pt_opcode::CLI: o_opc_imp(iter, iend, serializable_token::st_command::CLI_imp); break;
+                case pt_opcode::CLV: o_opc_imp(iter, iend, serializable_token::st_command::CLV_imp); break;
+                case pt_opcode::DEX: o_opc_imp(iter, iend, serializable_token::st_command::DEX_imp); break;
+                case pt_opcode::DEY: o_opc_imp(iter, iend, serializable_token::st_command::DEY_imp); break;
+                case pt_opcode::INX: o_opc_imp(iter, iend, serializable_token::st_command::INX_imp); break;
+                case pt_opcode::INY: o_opc_imp(iter, iend, serializable_token::st_command::INY_imp); break;
+                case pt_opcode::NOP: o_opc_imp(iter, iend, serializable_token::st_command::NOP_imp); break;
+                case pt_opcode::PHA: o_opc_imp(iter, iend, serializable_token::st_command::PHA_stk); break;
+                case pt_opcode::PHP: o_opc_imp(iter, iend, serializable_token::st_command::PHP_stk); break;
+                case pt_opcode::PHX: o_opc_imp(iter, iend, serializable_token::st_command::PHX_stk); break;
+                case pt_opcode::PHY: o_opc_imp(iter, iend, serializable_token::st_command::PHY_stk); break;
+                case pt_opcode::PLA: o_opc_imp(iter, iend, serializable_token::st_command::PLA_stk); break;
+                case pt_opcode::PLP: o_opc_imp(iter, iend, serializable_token::st_command::PLP_stk); break;
+                case pt_opcode::PLX: o_opc_imp(iter, iend, serializable_token::st_command::PLX_stk); break;
+                case pt_opcode::PLY: o_opc_imp(iter, iend, serializable_token::st_command::PLY_stk); break;
+                case pt_opcode::RTS: o_opc_imp(iter, iend, serializable_token::st_command::RTS_stk); break;
+                case pt_opcode::RTI: o_opc_imp(iter, iend, serializable_token::st_command::RTI_stk); break;
+                case pt_opcode::SEC: o_opc_imp(iter, iend, serializable_token::st_command::SEC_imp); break;
+                case pt_opcode::SED: o_opc_imp(iter, iend, serializable_token::st_command::SED_imp); break;
+                case pt_opcode::SEI: o_opc_imp(iter, iend, serializable_token::st_command::SEI_imp); break;
+                case pt_opcode::STP: o_opc_imp(iter, iend, serializable_token::st_command::STP_imp); break;
+                case pt_opcode::TAX: o_opc_imp(iter, iend, serializable_token::st_command::TAX_imp); break;
+                case pt_opcode::TAY: o_opc_imp(iter, iend, serializable_token::st_command::TAY_imp); break;
+                case pt_opcode::TSX: o_opc_imp(iter, iend, serializable_token::st_command::TSX_imp); break;
+                case pt_opcode::TXA: o_opc_imp(iter, iend, serializable_token::st_command::TXA_imp); break;
+                case pt_opcode::TXS: o_opc_imp(iter, iend, serializable_token::st_command::TXS_imp); break;
+                case pt_opcode::TYA: o_opc_imp(iter, iend, serializable_token::st_command::TYA_imp); break;
+                case pt_opcode::WAI: o_opc_imp(iter, iend, serializable_token::st_command::WAI_imp); break;
 
-                case pt_opcode::CLC: o_clc(iter, iend); break;
-                case pt_opcode::CLD: o_cld(iter, iend); break;
-                case pt_opcode::CLI: o_cli(iter, iend); break;
-                case pt_opcode::CLV: o_clv(iter, iend); break;
 
-                case pt_opcode::NOP: o_nop(iter, iend); break;
             }
             continue;
         }
@@ -542,76 +567,22 @@ d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::itera
 }
 
 void                    parser::
-d_byte(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+d_byteline(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+           serializable_token::st_kind dir_type)
 {
-    serializable_token stoken(st_kind::BYTE);
+    serializable_token stoken(dir_type);
     stoken.byteline(beg->v_byteline());
     validate_end_of_command(beg, end);
     m_tokens.push_back(stoken);
 }
 
 void                    parser::
-d_word(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
-{
-    serializable_token stoken(st_kind::WORD);
-    stoken.byteline(beg->v_byteline());
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
-
-
-void                    parser::
-o_brk(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+o_opc_imp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+          serializable_token::st_command opc) noexcept
 {
     serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::BRK_stk);
+    stoken.command(opc);
     validate_end_of_command(beg, end);
     m_tokens.push_back(stoken);
 }
 
-
-
-void                    parser::
-o_clc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
-{
-    serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::CLC_imp);
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
-
-void                    parser::
-o_cld(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
-{
-    serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::CLD_imp);
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
-
-void                    parser::
-o_cli(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
-{
-    serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::CLI_imp);
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
-
-void                    parser::
-o_clv(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
-{
-    serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::CLV_imp);
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
-
-void                    parser::
-o_nop(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
-{
-    serializable_token stoken(serializable_token::st_kind::OPCODE);
-    stoken.command(serializable_token::st_command::NOP_imp);
-    validate_end_of_command(beg, end);
-    m_tokens.push_back(stoken);
-}
