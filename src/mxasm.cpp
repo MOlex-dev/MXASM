@@ -11,30 +11,10 @@
 #include "../include/util.hpp"
 #include "../include/lexer.hpp"
 #include "../include/parser.hpp"
+#include "../include/serializer.hpp"
 
 //#define DEBUG_INPUT
 //#define DEBUG_LEXER
-#define DEBUG_PARSER
-
-
-
-
-
-
-#include "../include/parser.hpp"
-#include "../include/serializer.hpp"
-
-//#define DEBUG_PARSER_INPUT
-//#define DEBUG_PARSER
-
-
-
-
-
-
-
-
-
 
 using namespace mxasm;
 
@@ -70,55 +50,11 @@ int main(int argc, char **argv)
         parser lex_parser(lexed_tokens);
         auto parsed_tokens = lex_parser.tokens();
 
-#ifdef DEBUG_PARSER
+        serializer encoder(parsed_tokens);
+        auto program = encoder.binary_program();
 
-
-#endif
-
-
-
-
-//
-//        parser token_parser(lexed_tokens);
-//
-//
-//#ifdef DEBUG_PARSER_INPUT
-//        const auto &parsed_tokens = token_parser.organized_input();
-//        for (const auto &token : parsed_tokens) {
-//            std::cout << std::setw(4) << token.row() << ',';
-//            std::cout << std::setw(3) << token.column() << ':';
-//            std::cout << std::setw(24) << token.kind() << ": ";
-//            std::cout << token.lexeme();
-//            std::cout << '\n';
-//        }
-//#endif
-//
-//
-//        const auto &serialized_tokens = token_parser.tokens();
-//
-//
-//#ifdef DEBUG_PARSER
-//        for (const auto &token : serialized_tokens) {
-//            std::cout << token << std::endl;
-//        }
-//#endif
-//
-//
-//        serializer encoder(serialized_tokens);
-//        //print here
-//
-//
-//
-//
-//
-
-
-
-
-
-
-
-
+        std::string output_name = source_file_path.substr(0, source_file_path.length() - 4) + ".bin";
+        write_program_to_file(program, output_name);
 
     } catch (const mxasm_exception &ex) {
         std::cerr << "ERROR!" << std::endl;

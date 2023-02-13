@@ -1,34 +1,32 @@
 /*-------------------------------*
  |        MOlex Assembler        |
- |          Serializer           |
+ |           Serializer          |
  |                               |
  |       Author: MOlex-dev       |
  *-------------------------------*/
 
 #pragma once
 
-#include <map>
+#include <vector>
 
-#include "../include/util.hpp"
-#include "../include/serializable_token.hpp"
+#include "serializable_token.hpp"
+
 
 namespace mxasm
 {
     class serializer
     {
     public:
-        enum class opcodes
-        {
-
-        };
-        explicit serializer(const serializable_tokens &tokens);
-
-
+        explicit serializer(std::list<serializable_token> &tokens);
+        std::vector<byte_t> binary_program();
 
     private:
-        const serializable_tokens &m_input_tokens;
-        static std::map<opcodes, std::string> opcode_str;
+        const std::list<serializable_token> m_tokens;
+        std::vector<byte_t>                 m_program       {};
+        word_t                              m_write_address {0x0600};
+        word_t                              m_end_of_program {0};
 
+        void serialize();
+        void write_byte_to_memory(const byte_t value);
     };
 }
-

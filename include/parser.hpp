@@ -39,8 +39,27 @@ namespace mxasm
         void index_and_replace_constants();
         void validate_and_replace_labels();
         void parser_tokens_to_serializable();
+        void validate_end_of_command(const std::list<parser_token>::const_iterator &iter,
+                                     const std::list<parser_token>::const_iterator &end);
 
         void organize_lexer_tokens(std::list<lexer_token> &lexed_tokens);
         void add_exception(const std::string &exception) noexcept;
+
+
+        void d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
+        void d_byte(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
+        void d_word(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
+
+        void o_brk(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+
+
+        void o_clc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+        void o_cld(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+        void o_cli(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+        void o_clv(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
+
+
+
+        void o_nop(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept;
     };
 }

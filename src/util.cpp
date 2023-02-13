@@ -52,8 +52,21 @@ open_source_code(const std::string file_path)
         }
         source_code.emplace_back(line_number, buffer);
     }
-
+    file_reader.close();
     return source_code;
+}
+
+void                    mxasm::
+write_program_to_file(const std::vector<byte_t> &program, const std::string out_name)
+{
+    std::ofstream file_writer(out_name, std::ios_base::binary);
+    if (not file_writer.is_open()) {
+        throw arguments_exception("Can't create program binary file!");
+    }
+    for (const auto byte : program) {
+        file_writer << byte;
+    }
+    file_writer.close();
 }
 
 

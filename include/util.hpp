@@ -26,6 +26,7 @@ namespace mxasm
 
     std::string    get_source_file_path_from_cmd(const std::vector<std::string> &arguments);
     source_listing open_source_code(const std::string file_path);
+    void           write_program_to_file(const std::vector<byte_t> &program, const std::string out_name);
 
     std::string to_lower(const std::string &default_string);
     std::string to_upper(const std::string &default_string);

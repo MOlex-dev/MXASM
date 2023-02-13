@@ -76,7 +76,7 @@ namespace mxasm
         std::size_t          column() const noexcept;
         pt_opcode            v_opcode() const noexcept;
         pt_directive         v_directive() const noexcept;
-        std::vector<word_t> &v_byteline() noexcept;
+        std::vector<word_t>  v_byteline() const noexcept;
 
         void base_token(const lexer_token new_base_token);
         void kind(const pt_kind opcode);

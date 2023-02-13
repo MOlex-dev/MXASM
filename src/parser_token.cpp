@@ -54,8 +54,8 @@ parser_token::pt_directive   parser_token::
 v_directive() const noexcept
 { return m_v_directive; }
 
-std::vector<word_t>&    parser_token::
-v_byteline() noexcept
+std::vector<word_t>     parser_token::
+v_byteline() const noexcept
 { return m_v_byteline; }
 
 

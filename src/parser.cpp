@@ -8,9 +8,11 @@
 #include "../include/parser.hpp"
 
 using namespace mxasm;
-using lt_kind   = lexer_token::lt_kind;
-using pt_kind   = parser_token::pt_kind;
-using pt_opcode = parser_token::pt_opcode;
+using lt_kind    = lexer_token::lt_kind;
+using pt_kind    = parser_token::pt_kind;
+using pt_opcode  = parser_token::pt_opcode;
+using st_kind    = serializable_token::st_kind;
+using st_command = serializable_token::st_command;
 
 
 parser::
@@ -24,7 +26,7 @@ tokens()
     if (m_tokens.empty()) tokenize();
     return m_tokens;
 }
-#include <iomanip> //TODO: REMOVE THIS LIB
+
 
 void                    parser::
 tokenize()
@@ -140,57 +142,6 @@ tokenize()
     }
 
     parser_tokens_to_serializable();
-    // TODO:
-
-
-
-
-
-    for (auto &line : m_parser_tokens) {
-        std::cout << std::right << std::setw(5) << std::dec << line.begin()->row() << ": ";
-
-        for (auto &t : line) {
-            auto tk = t.kind();
-
-            std::cout << '{' << tk << ':';
-            if (tk == pt_kind::NUMBER) {
-                std::cout <<  std::hex << t.v_number();
-            } else if (tk == pt_kind::DIRECTIVE) {
-                std::cout << t.v_directive();
-                if (t.v_directive() == parser_token::pt_directive::CODE_POSITION) {
-                    std::cout << '=' << std::hex << t.v_number();
-                } else if (t.v_directive() == parser_token::pt_directive::BYTE) {
-                    std::cout << '=' << std::right;
-                    const auto &bl = t.v_byteline();
-                    for (const auto &c : bl) {
-                        std::cout << std::setw(3) << std::hex << c;
-                    }
-                } else if (t.v_directive() == parser_token::pt_directive::WORD) {
-                    std::cout << '=' << std::right;
-                    const auto &bl = t.v_byteline();
-                    for (const auto &c : bl) {
-                        std::cout << std::setw(5) << std::hex << c;
-                    }
-                }
-            } else if (tk == pt_kind::LABEL_DECLARATION or tk == pt_kind::LABEL_CALL) {
-                std::cout << '@' << t.v_number();
-            }
-
-
-            else if (tk == pt_kind::OPCODE) {
-                std::cout << t.v_opcode();
-            } else if (tk == pt_kind::COMMA) {
-            } else if (tk == pt_kind::STRING) {
-                std::cout << t.v_lexeme();
-            } else {
-                std::cout << t.v_lexeme();
-            }
-            std::cout << '}' << std::left << std::setw(4) << ',';
-        }
-        std::cout << '\n';
-    }
-
-
     if (not m_exceptions.empty()) {
         throw std::move(m_exceptions);
     }
@@ -204,7 +155,7 @@ validate_numbers_size()
             if (token.kind() == pt_kind::NUMBER) {
                 if (token.v_number() > 0xFF'FF) {
                     add_exception("Error at [" + std::to_string(token.row()) + ", " + std::to_string(token.column())
-                                  + "]:\nNumber constant can't be greater than 0xFF\'FF");
+                                  + "]:\nNumerical constant can't be greater than 0xFF\'FF");
                 }
             }
         }
@@ -502,12 +453,61 @@ validate_and_replace_labels()
         }
     }
 }
-
+#include <iomanip> //TODO: REMOVE THIS LIB
+#include <iostream>
 void                    parser::
 parser_tokens_to_serializable()
 {
+    for (auto &line : m_parser_tokens) {
+        auto iter = line.begin();
+        auto iend = line.end();
 
-    //TODO HERE
+        if (iter->kind() == pt_kind::LABEL_DECLARATION) {
+            serializable_token stoken(st_kind::LABEL);
+            stoken.number(iter->v_number());
+            std::advance(iter, 1);// TODO CHECK THIS
+            if (iter == iend or iter->kind() == pt_kind::DIRECTIVE or iter->kind() == pt_kind::OPCODE) continue;
+            add_exception("Error at line " + std::to_string(iter->row()) + ":\nA NEW LINE, DIRECTIVE, or OPCODE " \
+                          "was expected, but " + parser_token::pt_kind_to_string(iter->kind()) + " was found");
+        }
+
+        if (iter->kind() == pt_kind::DIRECTIVE) {
+            switch (iter->v_directive()) {
+                case parser_token::pt_directive::CODE_POSITION: d_code_pos(iter, iend); break;
+                case parser_token::pt_directive::BYTE: d_byte(iter, iend); break;
+                case parser_token::pt_directive::WORD: d_word(iter, iend); break;
+            }
+            continue;
+        }
+
+        if (iter->kind() == pt_kind::OPCODE) {
+            switch (iter->v_opcode()) {
+                case pt_opcode::BRK: o_brk(iter, iend); break;
+
+                case pt_opcode::CLC: o_clc(iter, iend); break;
+                case pt_opcode::CLD: o_cld(iter, iend); break;
+                case pt_opcode::CLI: o_cli(iter, iend); break;
+                case pt_opcode::CLV: o_clv(iter, iend); break;
+
+                case pt_opcode::NOP: o_nop(iter, iend); break;
+            }
+            continue;
+        }
+
+        add_exception("Unknown token at [" + std::to_string(iter->row()) + ", " + std::to_string(iter->column())
+                      + "]:\nCommand can starts from OPCODE, LABEL DECLARATION, or DIRECTIVE, but "
+                      + parser_token::pt_kind_to_string(iter->kind()) + " was found");
+    }
+}
+
+void                    parser::
+validate_end_of_command(const std::list<parser_token>::const_iterator &iter,
+                        const std::list<parser_token>::const_iterator &end)
+{
+    auto nxt = std::next(iter);
+    if (nxt == end) return;
+    add_exception("Error at line " + std::to_string(iter->row()) + ":\nA NEW LINE was expected, but "
+                  + parser_token::pt_kind_to_string(nxt->kind()) + " was found");
 }
 
 
@@ -529,3 +529,89 @@ organize_lexer_tokens(std::list<lexer_token> &lexed_tokens)
 void                    parser::
 add_exception(const std::string &exception) noexcept
 { m_exceptions.emplace_back(new parser_exception(exception)); }
+
+
+
+void                    parser::
+d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::CODE_POS);
+    stoken.number(beg->v_number());
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+d_byte(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::BYTE);
+    stoken.byteline(beg->v_byteline());
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+d_word(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::WORD);
+    stoken.byteline(beg->v_byteline());
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+
+void                    parser::
+o_brk(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::BRK_stk);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+
+
+void                    parser::
+o_clc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::CLC_imp);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_cld(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::CLD_imp);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_cli(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::CLI_imp);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_clv(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::CLV_imp);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_nop(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end) noexcept
+{
+    serializable_token stoken(serializable_token::st_kind::OPCODE);
+    stoken.command(serializable_token::st_command::NOP_imp);
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
+}
