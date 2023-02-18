@@ -13,6 +13,7 @@ using pt_kind    = parser_token::pt_kind;
 using pt_opcode  = parser_token::pt_opcode;
 using st_kind    = serializable_token::st_kind;
 using st_command = serializable_token::st_command;
+using adr_mode   = parser_token::adr_mode;
 
 
 parser::
@@ -117,7 +118,8 @@ tokenize()
                 continue;
             case pt_kind::OPCODE:
                 if (l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_X or
-                    l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_Y) {
+                    l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_Y or
+                    l.begin()->v_opcode() == parser_token::pt_opcode::REGISTER_A) {
                     add_exception("Error at line " + std::to_string(l.begin()->row()) + ":\nLine can starts from " \
                                   "DIRECTIVE, LABEL DECLARATION, or OPCODE, but "
                                   + parser_token::pt_opcode_to_string(l.begin()->v_opcode())
@@ -411,7 +413,9 @@ validate_and_replace_labels()
     std::map<std::string, std::size_t> label_indexes;
 
     std::size_t label_id {0};
+    auto list_iter = m_parser_tokens.begin();
     for (auto &line : m_parser_tokens) {
+        ++list_iter;
         if (line.begin()->kind() != pt_kind::LABEL_DECLARATION) continue;
 
         std::string label_name = to_lower(line.begin()->v_lexeme());
@@ -431,12 +435,17 @@ validate_and_replace_labels()
                               + ":\nExpected NEW LINE, OPCODE, or DIRECTIVE, but "
                               + parser_token::pt_kind_to_string(ti->kind()) + " was found");
             }
-            if (ti->v_opcode() == pt_opcode::REGISTER_X or ti->v_opcode() == pt_opcode::REGISTER_Y) {
+            if (ti->v_opcode() == pt_opcode::REGISTER_X or ti->v_opcode() == pt_opcode::REGISTER_Y or
+                ti->v_opcode() == pt_opcode::REGISTER_A) {
                 add_exception("Error at [" + std::to_string(ti->row()) + ", "
                               + std::to_string(ti->column()) + "]: Expected NEW LINE, OPCODE, or DIRECTIVE, but " \
                               "REGISTER NAME was found");
             }
         }
+        if (ti != line.end()) {
+            m_parser_tokens.insert(list_iter, {ti, line.end()});
+        }
+        line.erase(ti, line.end());
     }
 
     for (auto &line : m_parser_tokens) {
@@ -453,6 +462,27 @@ validate_and_replace_labels()
         }
     }
 }
+
+
+void                    parser::
+organize_lexer_tokens(std::list<lexer_token> &lexed_tokens)
+{
+    std::size_t i = 0;
+    for (auto &token : lexed_tokens) {
+        if (token.is(lt_kind::COMMENT)) continue;
+        if (token.row() != i) {
+            i = token.row();
+            m_lexer_tokens.push_back(std::list<lexer_token>());
+        }
+        m_lexer_tokens.rbegin()->push_back(std::move(token));
+    }
+}
+
+void                    parser::
+add_exception(const std::string &exception) noexcept
+{ m_exceptions.emplace_back(new parser_exception(exception)); }
+
+
 #include <iomanip> //TODO: REMOVE THIS LIB
 #include <iostream>
 void                    parser::
@@ -463,12 +493,8 @@ parser_tokens_to_serializable()
         auto iend = line.end();
 
         if (iter->kind() == pt_kind::LABEL_DECLARATION) {
-            serializable_token stoken(st_kind::LABEL);
-            stoken.number(iter->v_number());
-            std::advance(iter, 1);// TODO CHECK THIS
-            if (iter == iend or iter->kind() == pt_kind::DIRECTIVE or iter->kind() == pt_kind::OPCODE) continue;
-            add_exception("Error at line " + std::to_string(iter->row()) + ":\nA NEW LINE, DIRECTIVE, or OPCODE " \
-                          "was expected, but " + parser_token::pt_kind_to_string(iter->kind()) + " was found");
+            l_decl(iter, iend);
+            continue;
         }
 
         if (iter->kind() == pt_kind::DIRECTIVE) {
@@ -479,6 +505,10 @@ parser_tokens_to_serializable()
             }
             continue;
         }
+
+
+
+
 
         if (iter->kind() == pt_kind::OPCODE) {
             switch (iter->v_opcode()) {
@@ -514,6 +544,38 @@ parser_tokens_to_serializable()
                 case pt_opcode::TYA: o_opc_imp(iter, iend, serializable_token::st_command::TYA_imp); break;
                 case pt_opcode::WAI: o_opc_imp(iter, iend, serializable_token::st_command::WAI_imp); break;
 
+                case pt_opcode::JMP: o_jmp(iter, iend); break;
+                case pt_opcode::JSR: o_jsr(iter, iend); break;
+                case pt_opcode::ASL: o_asl(iter, iend); break;
+                case pt_opcode::INC: o_inc(iter, iend); break;
+                case pt_opcode::ROL: o_rol(iter, iend); break;
+                case pt_opcode::DEC: o_dec(iter, iend); break;
+                case pt_opcode::LSR: o_lsr(iter, iend); break;
+                case pt_opcode::ROR: o_ror(iter, iend); break;
+                case pt_opcode::STX: o_stx(iter, iend); break;
+                case pt_opcode::LDX: o_ldx(iter, iend); break;
+                case pt_opcode::TSB: o_tsb(iter, iend); break;
+                case pt_opcode::ORA: o_ora(iter, iend); break;
+                case pt_opcode::TRB: o_trb(iter, iend); break;
+                case pt_opcode::BIT: o_bit(iter, iend); break;
+                case pt_opcode::AND: o_and(iter, iend); break;
+                case pt_opcode::EOR: o_eor(iter, iend); break;
+                case pt_opcode::ADC: o_adc(iter, iend); break;
+                case pt_opcode::CPX: o_cpx(iter, iend); break;
+                case pt_opcode::SBC: o_sbc(iter, iend); break;
+                case pt_opcode::STY: o_sty(iter, iend); break;
+                case pt_opcode::STA: o_sta(iter, iend); break;
+                case pt_opcode::STZ: o_stz(iter, iend); break;
+                case pt_opcode::LDY: o_ldy(iter, iend); break;
+                case pt_opcode::LDA: o_lda(iter, iend); break;
+                case pt_opcode::CPY: o_cpy(iter, iend); break;
+                case pt_opcode::CMP: o_cmp(iter, iend); break;
+
+                //case pt_opcode::LDA: o_lda(iter, iend); break;
+
+
+
+
 
             }
             continue;
@@ -526,36 +588,13 @@ parser_tokens_to_serializable()
 }
 
 void                    parser::
-validate_end_of_command(const std::list<parser_token>::const_iterator &iter,
-                        const std::list<parser_token>::const_iterator &end)
+l_decl(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
 {
-    auto nxt = std::next(iter);
-    if (nxt == end) return;
-    add_exception("Error at line " + std::to_string(iter->row()) + ":\nA NEW LINE was expected, but "
-                  + parser_token::pt_kind_to_string(nxt->kind()) + " was found");
+    serializable_token stoken(st_kind::LABEL);
+    stoken.number(beg->v_number());
+    validate_end_of_command(beg, end);
+    m_tokens.push_back(stoken);
 }
-
-
-void                    parser::
-organize_lexer_tokens(std::list<lexer_token> &lexed_tokens)
-{
-    std::size_t i = 0;
-    for (auto &token : lexed_tokens) {
-        if (token.is(lt_kind::COMMENT)) continue;
-        if (token.row() != i) {
-            i = token.row();
-            m_lexer_tokens.push_back(std::list<lexer_token>());
-        }
-        m_lexer_tokens.rbegin()->push_back(std::move(token));
-    }
-}
-
-
-void                    parser::
-add_exception(const std::string &exception) noexcept
-{ m_exceptions.emplace_back(new parser_exception(exception)); }
-
-
 
 void                    parser::
 d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
@@ -578,7 +617,7 @@ d_byteline(std::list<parser_token>::iterator beg, std::list<parser_token>::itera
 
 void                    parser::
 o_opc_imp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
-          serializable_token::st_command opc) noexcept
+          serializable_token::st_command opc)
 {
     serializable_token stoken(serializable_token::st_kind::OPCODE);
     stoken.command(opc);
@@ -586,3 +625,595 @@ o_opc_imp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterat
     m_tokens.push_back(stoken);
 }
 
+
+// ------------------------------------- INSTRUCTIONS -------------------------------------
+void                    parser::
+o_jmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::JMP_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::ABS_IND:
+            stoken.command(st_command::JMP_ind);
+
+
+
+            break;
+        case adr_mode::ABS_X_IND:
+            stoken.command(st_command::JMP_iax);
+
+
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for JMP");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_jsr(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    if (define_addr_mode(std::next(beg), end) == adr_mode::ABS_or_REL) {
+        stoken.command(st_command::JSR_abs);
+        stoken.number(std::next(beg)->v_number());
+        if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+        else { stoken.labelable(false); }
+    } else {
+        add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for JSR");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_asl(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::ASL_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::ASL_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ASL");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_inc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::INC_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::INC_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for INC");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_rol(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::ROL_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::ROL_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ROL");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_dec(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::DEC_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::DEC_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for DEC");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_lsr(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::LSR_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::LSR_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LSR");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_ror(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::ROR_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::A:
+            stoken.command(st_command::ROR_a);
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ROR");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_stx(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::STX_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STX");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_ldx(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::LDX_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LDX");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_tsb(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::TSB_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for TSB");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_ora(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::ORA_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ORA");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_trb(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::TRB_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for TRB");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_bit(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::BIT_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for BIT");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_and(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::AND_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for AND");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_eor(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::EOR_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for EOR");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_adc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::ADC_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ADC");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_cpx(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::CPX_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for CPX");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_sbc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::SBC_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for SBC");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_sty(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::STY_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STY");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_sta(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::STA_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STA");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_stz(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::STZ_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STZ");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_ldy(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::LDY_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LDY");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_lda(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::LDA_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LDA");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_cpy(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::CPY_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for CPY");
+    }
+    m_tokens.push_back(stoken);
+}
+
+void                    parser::
+o_cmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    serializable_token stoken(st_kind::OPCODE);
+    switch (define_addr_mode(std::next(beg), end)) {
+        case adr_mode::ABS_or_REL:
+            stoken.command(st_command::CMP_abs);
+            stoken.number(std::next(beg)->v_number());
+            if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        default:
+            add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for CMP");
+    }
+    m_tokens.push_back(stoken);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void                    parser::
+validate_end_of_command(const std::list<parser_token>::const_iterator &iter,
+                        const std::list<parser_token>::const_iterator &end)
+{
+    auto nxt = std::next(iter);
+    if (nxt == end) return;
+    add_exception("Error at line " + std::to_string(iter->row()) + ":\nA NEW LINE was expected, but "
+                  + parser_token::pt_kind_to_string(nxt->kind()) + " was found");
+}
+
+
+
+
+
+
+
+parser_token::adr_mode  parser::
+define_addr_mode(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end)
+{
+    const auto tk = beg;
+    if (beg == end) return adr_mode::STK_or_IMP;
+    if (beg->kind() == pt_kind::OPCODE and beg->v_opcode() == pt_opcode::REGISTER_A) {
+        std::advance(beg, 1);
+        if (beg == end) return adr_mode::A;
+    }
+
+    else if (beg->kind() == pt_kind::NUMBER or beg->kind() == pt_kind::LABEL_CALL) {
+        // If number
+        if (beg->kind() == pt_kind::NUMBER) {
+            auto num1 = beg->v_number();
+            if (num1 <= 0xFF) {             // is zero page?
+                std::advance(beg, 1);
+                if (beg == end) return adr_mode::ZP;
+
+            } else {
+                std::advance(beg, 1);
+                if (beg == end) return adr_mode::ABS_or_REL;
+            }
+
+        } else if (beg->kind() == pt_kind::LABEL_CALL) {
+            std::advance(beg, 1);
+            if (beg == end) return adr_mode::ABS_or_REL;
+        }
+
+        //TODO: THINK ON LABELS
+
+    }
+
+
+    return adr_mode::UNEXPECTED;
+
+
+
+
+
+    if (beg->kind() == pt_kind::HASH) {
+        std::advance(beg, 1);
+        // TODO: FROM HERE!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+        if (beg == end or
+            (beg->kind() != pt_kind::NUMBER and beg->kind() != pt_kind::LESS and beg->kind() != pt_kind::GREATER)) {
+            add_exception("Error at line " + std::to_string(tk->row()) + ":\nWrong addressing signature");
+            return adr_mode::UNEXPECTED;
+        }
+        if (beg->kind() == pt_kind::NUMBER) {
+
+        }
+
+
+
+        // TODO: Check for label
+        //TODO: Check for < and >
+
+        validate_end_of_command(beg, end);
+
+
+
+    } else if (beg->kind() == pt_kind::LEFT_PARENTHESIS) {
+
+
+        validate_end_of_command(beg, end);
+
+
+    } else if (beg->kind() == pt_kind::NUMBER or beg->kind() == pt_kind::LABEL_CALL) {
+
+
+
+
+        validate_end_of_command(beg, end);
+
+
+
+
+
+
+
+
+
+
+    } else {
+        return adr_mode::UNEXPECTED;
+    }
+}

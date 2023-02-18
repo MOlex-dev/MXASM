@@ -46,16 +46,19 @@ namespace mxasm
         st_command          command() const noexcept;
         std::vector<word_t> byteline() const noexcept;
         word_t              number() const noexcept;
+        bool                labelable() const noexcept;
 
         void kind(const st_kind token_kind) noexcept;
         void command(const st_command token_command) noexcept;
         void byteline(std::vector<word_t> line) noexcept;
         void number(const word_t value) noexcept;
+        void labelable(const bool value) noexcept;
 
     private:
         st_kind             m_kind;
         st_command          m_command;
         std::vector<word_t> m_byteline;
         word_t              m_number;
+        bool                m_labelable;
     };
 }

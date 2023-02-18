@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "serializable_token.hpp"
 
@@ -28,5 +29,6 @@ namespace mxasm
 
         void serialize();
         void write_byte_to_memory(const byte_t value);
+        void write_word_to_memory(const word_t value);
     };
 }

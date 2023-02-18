@@ -63,7 +63,22 @@ namespace mxasm
             STA, STP, STX, STY, STZ,
             TAX, TAY, TRB, TSB, TSX, TXA, TXS, TYA,
             WAI,
-            REGISTER_X, REGISTER_Y
+            REGISTER_X, REGISTER_Y, REGISTER_A
+        };
+
+        enum class adr_mode
+        {
+            UNEXPECTED,
+            STK_or_IMP,
+            A,
+            ABS_or_REL,
+            ABS_Y, ABS_X,
+            ABS_IND, ABS_X_IND,
+            IMM,
+            ZP, ZP_X, ZP_Y,
+            ZP_REL,
+            ZP_IND,
+            ZP_X_IND, ZP_IND_Y,
         };
 
         explicit parser_token(lexer_token other);

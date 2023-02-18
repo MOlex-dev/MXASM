@@ -33,6 +33,10 @@ word_t                  serializable_token::
 number() const noexcept
 { return m_number; }
 
+bool                    serializable_token::
+labelable() const noexcept
+{ return m_labelable; }
+
 
 void                    serializable_token::
 kind(const st_kind kind) noexcept
@@ -50,3 +54,6 @@ void                    serializable_token::
 number(const word_t value) noexcept
 { m_number = value; }
 
+void                    serializable_token::
+labelable(const bool value) noexcept
+{ m_labelable = value; }

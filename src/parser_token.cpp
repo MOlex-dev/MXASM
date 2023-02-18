@@ -19,9 +19,6 @@ parser_token(lexer_token other)
 }
 
 
-
-
-
 lexer_token             parser_token::
 base_token() const noexcept
 { return m_base_token; }
@@ -104,6 +101,8 @@ std::string             parser_token::
 pt_opcode_to_string(const pt_opcode opcode) noexcept
 {
     switch (opcode) {
+        case pt_opcode::REGISTER_A:
+            return "REGISTER A";
         case pt_opcode::REGISTER_X:
             return "REGISTER X";
         case pt_opcode::REGISTER_Y:
@@ -158,7 +157,7 @@ pt_kind_string
     { pt_kind::NUMBER,            "NUMBER"            },
     { pt_kind::LABEL_DECLARATION, "LABEL DECLARATION" },
     { pt_kind::OPCODE,            "OPCODE"            },
-    { pt_kind::_IDENTIFIER,       "IDENTIFIER"       },
+    { pt_kind::_IDENTIFIER,       "IDENTIFIER"        },
     { pt_kind::COMMA,             "COMMA"             },
     { pt_kind::HASH,              "HASH"              },
     { pt_kind::LESS,              "LESS"              },
@@ -199,7 +198,7 @@ pt_opcode_string
     { pt_opcode::STZ,  "STZ"  }, { pt_opcode::TAX,  "TAX"  }, { pt_opcode::TAY,  "TAY"  }, { pt_opcode::TRB,  "TRB"  },
     { pt_opcode::TSB,  "TSB"  }, { pt_opcode::TSX,  "TSX"  }, { pt_opcode::TXA,  "TXA"  }, { pt_opcode::TXS,  "TXS"  },
     { pt_opcode::TYA,  "TYA"  }, { pt_opcode::WAI,  "WAI"  },
-    { pt_opcode::REGISTER_X, "X" }, { pt_opcode::REGISTER_Y, "Y"}
+    { pt_opcode::REGISTER_X, "X" }, { pt_opcode::REGISTER_Y, "Y"}, { pt_opcode::REGISTER_A, "A"}
 };
 
 const std::map<parser_token::pt_directive, std::string> parser_token::
