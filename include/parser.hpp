@@ -54,6 +54,10 @@ namespace mxasm
                         serializable_token::st_kind dir_type);
         void o_opc_imp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
                        serializable_token::st_command opc);
+        void o_opc_rel(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+                       serializable_token::st_command opc);
+        void o_rmb_or_smb(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+                          serializable_token::st_command opc);
 
         void o_jmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
         void o_jsr(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);

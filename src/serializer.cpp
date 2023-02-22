@@ -33,6 +33,7 @@ serialize()
 {
     std::map<word_t, word_t> label_address;
     std::map<std::pair<word_t, word_t>, bool> labelable_commands; // Address - Label - two_bytes
+    std::map<word_t, word_t> relative_labels; // address - label
 
     for (const auto &op : m_tokens) {
         if (op.kind() == st_kind::LABEL) {
@@ -139,6 +140,66 @@ serialize()
                     write_word_to_memory(data);
                     break;
 
+                case st_command::BPL_rel:
+                case st_command::BMI_rel:
+                case st_command::BVC_rel:
+                case st_command::BVS_rel:
+                case st_command::BRA_rel:
+                case st_command::BCC_rel:
+                case st_command::BCS_rel:
+                case st_command::BNE_rel:
+                case st_command::BEQ_rel:
+                    code = static_cast<byte_t>(op.command()); // ELSE 00
+                    write_byte_to_memory(code);
+                    relative_labels.emplace(m_write_address, op.number());
+                    write_byte_to_memory(0);
+                    break;
+
+                case st_command::RMB0_zpg:
+                case st_command::RMB1_zpg:
+                case st_command::RMB2_zpg:
+                case st_command::RMB3_zpg:
+                case st_command::RMB4_zpg:
+                case st_command::RMB5_zpg:
+                case st_command::RMB6_zpg:
+                case st_command::RMB7_zpg:
+                case st_command::SMB0_zpg:
+                case st_command::SMB1_zpg:
+                case st_command::SMB2_zpg:
+                case st_command::SMB3_zpg:
+                case st_command::SMB4_zpg:
+                case st_command::SMB5_zpg:
+                case st_command::SMB6_zpg:
+                case st_command::SMB7_zpg:
+
+                case st_command::ORA_zpg:
+                case st_command::TSB_zpg:
+                case st_command::ASL_zpg:
+                case st_command::TRB_zpg:
+                case st_command::STZ_zpg:
+                case st_command::BIT_zpg:
+                case st_command::AND_zpg:
+                case st_command::ROL_zpg:
+                case st_command::EOR_zpg:
+                case st_command::LSR_zpg:
+                case st_command::ADC_zpg:
+                case st_command::ROR_zpg:
+                case st_command::STY_zpg:
+                case st_command::STA_zpg:
+                case st_command::STX_zpg:
+                case st_command::LDY_zpg:
+                case st_command::LDA_zpg:
+                case st_command::LDX_zpg:
+                case st_command::CMP_zpg:
+                case st_command::CPY_zpg:
+                case st_command::CPX_zpg:
+                case st_command::INC_zpg:
+                case st_command::DEC_zpg:
+                case st_command::SBC_zpg:
+                    code = static_cast<byte_t>(op.command());
+                    write_byte_to_memory(code);
+                    write_byte_to_memory(op.number());
+                    break;
 
 
 
@@ -148,6 +209,7 @@ serialize()
         }
     }
 
+    // For labels
     for (const auto &[address, two_bytes] : labelable_commands) {
         m_write_address = address.first;
         if (two_bytes) {
@@ -155,6 +217,18 @@ serialize()
         } else {
             write_byte_to_memory(label_address.at(address.second));
         }
+    }
+
+    // For relative
+    for (const auto &[address, lbl] : relative_labels) {
+        m_write_address = address;
+
+        int32_t distance = label_address.at(lbl) - (m_write_address + 1); // Standard offset from next instruction
+        if (distance < -128 or distance > 127) {
+            write_byte_to_memory(0x00);
+            continue;
+        }
+        write_byte_to_memory(distance);
     }
     m_program.erase(m_program.begin() + m_end_of_program + 1, m_program.end());
 }

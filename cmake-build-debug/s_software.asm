@@ -1,9 +1,10 @@
-cmp $0100
+.define adzp $a4
+.define ad   $3fc1
+;lda #4
 nop
-_init_apple:
-iny
-nop
-nop
-_nxt:
 inx
-_final:
+inc adzp
+dec adzp
+sbc 45
+nop
+brk
