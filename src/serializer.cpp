@@ -196,6 +196,27 @@ serialize()
                 case st_command::INC_zpg:
                 case st_command::DEC_zpg:
                 case st_command::SBC_zpg:
+
+                case st_command::ORA_zpx:
+                case st_command::BIT_zpx:
+                case st_command::STZ_zpx:
+                case st_command::ASL_zpx:
+                case st_command::STY_zpx:
+                case st_command::LDY_zpx:
+                case st_command::AND_zpx:
+                case st_command::ROL_zpx:
+                case st_command::EOR_zpx:
+                case st_command::LSR_zpx:
+                case st_command::ADC_zpx:
+                case st_command::ROR_zpx:
+                case st_command::STA_zpx:
+                case st_command::LDA_zpx:
+                case st_command::CMP_zpx:
+                case st_command::DEC_zpx:
+                case st_command::SBC_zpx:
+                case st_command::INC_zpx:
+                case st_command::STX_zpy:
+                case st_command::LDX_zpy:
                     code = static_cast<byte_t>(op.command());
                     write_byte_to_memory(code);
                     write_byte_to_memory(op.number());

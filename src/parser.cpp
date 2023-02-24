@@ -744,6 +744,10 @@ o_asl(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::ASL_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::ASL_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ASL");
     }
@@ -766,6 +770,10 @@ o_inc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::INC_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::INC_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -792,6 +800,10 @@ o_rol(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::ROL_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::ROL_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ROL");
     }
@@ -814,6 +826,10 @@ o_dec(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::DEC_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::DEC_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -840,6 +856,10 @@ o_lsr(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::LSR_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::LSR_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LSR");
     }
@@ -864,6 +884,10 @@ o_ror(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::ROR_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::ROR_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ROR");
     }
@@ -885,6 +909,10 @@ o_stx(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::STX_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_Y:
+            stoken.command(st_command::STX_zpy);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STX");
     }
@@ -904,6 +932,10 @@ o_ldx(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::LDX_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_Y:
+            stoken.command(st_command::LDX_zpy);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -948,6 +980,10 @@ o_ora(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::ORA_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::ORA_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for ORA");
     }
@@ -990,6 +1026,10 @@ o_bit(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::BIT_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::BIT_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for BIT");
     }
@@ -1009,6 +1049,10 @@ o_and(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::AND_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::AND_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1032,6 +1076,10 @@ o_eor(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::EOR_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::EOR_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for EOR");
     }
@@ -1051,6 +1099,10 @@ o_adc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::ADC_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::ADC_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1095,6 +1147,10 @@ o_sbc(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::SBC_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::SBC_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for SBC");
     }
@@ -1114,6 +1170,10 @@ o_sty(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::STY_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::STY_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1137,6 +1197,10 @@ o_sta(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::STA_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::STA_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for STA");
     }
@@ -1156,6 +1220,10 @@ o_stz(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::STZ_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::STZ_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1179,6 +1247,10 @@ o_ldy(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             stoken.command(st_command::LDY_zpg);
             stoken.number(std::next(beg)->v_number());
             break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::LDY_zpx);
+            stoken.number(std::next(beg)->v_number());
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for LDY");
     }
@@ -1198,6 +1270,10 @@ o_lda(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::LDA_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::LDA_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1240,6 +1316,10 @@ o_cmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             break;
         case adr_mode::ZP:
             stoken.command(st_command::CMP_zpg);
+            stoken.number(std::next(beg)->v_number());
+            break;
+        case adr_mode::ZP_X:
+            stoken.command(st_command::CMP_zpx);
             stoken.number(std::next(beg)->v_number());
             break;
         default:
@@ -1289,9 +1369,13 @@ define_addr_mode(std::list<parser_token>::iterator beg, std::list<parser_token>:
             if (num1 <= 0xFF) {             // is zero page?
                 std::advance(beg, 1);
                 if (beg == end) return adr_mode::ZP;
-
-                //TODO HERE
-
+                if (beg->kind() == pt_kind::COMMA) {
+                    std::advance(beg, 1);
+                    if (beg != end and beg->kind() == pt_kind::OPCODE) {
+                        if (beg->v_opcode() == pt_opcode::REGISTER_X and std::next(beg) == end) return adr_mode::ZP_X;
+                        if (beg->v_opcode() == pt_opcode::REGISTER_Y and std::next(beg) == end) return adr_mode::ZP_Y;
+                    }
+                }
             } else {
                 std::advance(beg, 1);
                 if (beg == end) return adr_mode::ABS_or_REL;
