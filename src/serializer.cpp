@@ -129,6 +129,34 @@ serialize()
                 case st_command::LDA_abs:
                 case st_command::CPY_abs:
                 case st_command::CMP_abs:
+
+                case st_command::ORA_abx:
+                case st_command::ORA_aby:
+                case st_command::AND_abx:
+                case st_command::AND_aby:
+                case st_command::EOR_abx:
+                case st_command::EOR_aby:
+                case st_command::ADC_abx:
+                case st_command::ADC_aby:
+                case st_command::STA_abx:
+                case st_command::STA_aby:
+                case st_command::LDA_abx:
+                case st_command::LDA_aby:
+                case st_command::CMP_abx:
+                case st_command::CMP_aby:
+                case st_command::SBC_abx:
+                case st_command::SBC_aby:
+                case st_command::BIT_abx:
+                case st_command::LDY_abx:
+                case st_command::STZ_abx:
+                case st_command::INC_abx:
+                case st_command::DEC_abx:
+                case st_command::ASL_abx:
+                case st_command::ROL_abx:
+                case st_command::ROR_abx:
+                case st_command::LSR_abx:
+                case st_command::LDX_aby:
+
                     code = static_cast<byte_t>(op.command());
                     write_byte_to_memory(code);
                     if (op.labelable()) {
@@ -222,8 +250,28 @@ serialize()
                     write_byte_to_memory(op.number());
                     break;
 
-
-
+                case st_command::BBR0_zpr:
+                case st_command::BBR1_zpr:
+                case st_command::BBR2_zpr:
+                case st_command::BBR3_zpr:
+                case st_command::BBR4_zpr:
+                case st_command::BBR5_zpr:
+                case st_command::BBR6_zpr:
+                case st_command::BBR7_zpr:
+                case st_command::BBS0_zpr:
+                case st_command::BBS1_zpr:
+                case st_command::BBS2_zpr:
+                case st_command::BBS3_zpr:
+                case st_command::BBS4_zpr:
+                case st_command::BBS5_zpr:
+                case st_command::BBS6_zpr:
+                case st_command::BBS7_zpr:
+                    code = static_cast<byte_t>(op.command());
+                    write_byte_to_memory(code);
+                    write_byte_to_memory(op.number());
+                    relative_labels.emplace(m_write_address, op.byteline()[0]);
+                    write_byte_to_memory(0xFF);
+                    break;
 
             }
             continue;

@@ -46,7 +46,6 @@ namespace mxasm
         void l_decl(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
 
 
-
         void validate_end_of_command(const std::list<parser_token>::const_iterator &iter,
                                      const std::list<parser_token>::const_iterator &end);
         void d_code_pos(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);
@@ -57,6 +56,8 @@ namespace mxasm
         void o_opc_rel(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
                        serializable_token::st_command opc);
         void o_rmb_or_smb(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
+                          serializable_token::st_command opc);
+        void o_bbr_or_bbs(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end,
                           serializable_token::st_command opc);
 
         void o_jmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator end);

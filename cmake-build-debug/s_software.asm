@@ -1,13 +1,12 @@
-.define adzp $31
-.define ad   $3fc1
+.define adzp $f1
+.define ad   $4ffe
 ;lda #4
 nop
-and $fc, x
-rol adzp, x
+bbs7 adzp, mark
+mark:
+bbs5 adzp, _final
 nop
-eor adzp, x
-lsr $3a, x
-adc $07, x
-inx
-ror adzp, x
-brk
+bbs6 $41, mark
+bbs4 $11, mark 
+_final:
+nop
