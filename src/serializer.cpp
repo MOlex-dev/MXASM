@@ -33,7 +33,8 @@ serialize()
 {
     std::map<word_t, word_t> label_address;
     std::map<std::pair<word_t, word_t>, bool> labelable_commands; // Address - Label - two_bytes
-    std::map<word_t, word_t> relative_labels; // address - label
+    std::map<word_t, word_t> relative_labels;                     // address - label
+    std::set<std::tuple<word_t, word_t, bool>> immediate_labels; // address - label - is_low
 
     for (const auto &op : m_tokens) {
         if (op.kind() == st_kind::LABEL) {
@@ -273,6 +274,27 @@ serialize()
                     write_byte_to_memory(0xFF);
                     break;
 
+                case st_command::LDY_imm:
+                case st_command::CPY_imm:
+                case st_command::CPX_imm:
+                case st_command::LDX_imm:
+                case st_command::ORA_imm:
+                case st_command::AND_imm:
+                case st_command::EOR_imm:
+                case st_command::ADC_imm:
+                case st_command::BIT_imm:
+                case st_command::LDA_imm:
+                case st_command::CMP_imm:
+                case st_command::SBC_imm:
+                    code = static_cast<byte_t>(op.command());
+                    write_byte_to_memory(code);
+                    if (op.byteline().empty()) {
+                        write_byte_to_memory(op.number());
+                    } else {
+                        immediate_labels.emplace(m_write_address, op.number(), op.byteline()[0] == '<');
+                        write_byte_to_memory(0xFF);
+                    }
+                    break;
             }
             continue;
         }
@@ -298,6 +320,12 @@ serialize()
             continue;
         }
         write_byte_to_memory(distance);
+    }
+
+    // For immediate
+    for (const auto &[adr, lbl, low] : immediate_labels) {
+        m_write_address = adr;
+        write_byte_to_memory(low ? label_address.at(lbl) & 0x00'FF : label_address.at(lbl) / 0x100);
     }
     m_program.erase(m_program.begin() + m_end_of_program + 1, m_program.end());
 }

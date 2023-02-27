@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 
 #include "serializable_token.hpp"
 
