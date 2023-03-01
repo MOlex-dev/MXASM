@@ -1,2 +1,6 @@
-.define zpa $4a
-and (zpa, x)
+LDA #$01
+STA $0200
+LDA #$05
+STA $0201
+LDA #$08
+STA $0202

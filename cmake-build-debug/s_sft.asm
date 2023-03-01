@@ -4,10 +4,8 @@
 .define cpf 03 
 bpl _start
 _start:
-lda #%1111111111111111 ; load 4 to accumulator
-lda ()
+lda #%11111111 ; load 4 to accumulator
 and  %01101001
-lda #(X), cpfa
 .byte $04
 adc 9750
     dosmth:
@@ -21,14 +19,10 @@ do_:
 lda #sMx
 .byte $00,$05,$00,$05,$00,$00,$00,$00
 .byte "message" ;this is message $
-lda 
-lda
 ;.word $fe4a, $0050
 ldx countApples
 .byte $5
  .word $fe4a, $3
- lda X
- ldx "f"
 somemearK:
 ;do $0x
     ;    write herehe

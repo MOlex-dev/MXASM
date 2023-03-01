@@ -720,8 +720,20 @@ o_jmp(std::list<parser_token>::iterator beg, std::list<parser_token>::iterator e
             if (std::next(beg)->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
             else { stoken.labelable(false); }
             break;
-
-
+        case adr_mode::ABS_IND:
+            stoken.command(st_command::JMP_ind);
+            std::advance(beg, 2);
+            stoken.number(beg->v_number());
+            if (beg->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
+        case adr_mode::ABS_X_IND:
+            stoken.command(st_command::JMP_iax);
+            std::advance(beg, 2);
+            stoken.number(beg->v_number());
+            if (beg->kind() == pt_kind::LABEL_CALL) { stoken.labelable(true); }
+            else { stoken.labelable(false); }
+            break;
         default:
             add_exception("Error at line " + std::to_string(beg->row()) + ":\nUnavailable addressing mode for JMP");
     }
@@ -1920,15 +1932,41 @@ define_addr_mode(std::list<parser_token>::iterator beg, std::list<parser_token>:
                     if (beg != end) {
                         if (beg->kind() == pt_kind::RIGHT_PARENTHESIS and std::next(beg) == end) {
                             return adr_mode::ABS_IND;
+                        } else if (beg->kind() == pt_kind::COMMA) {
+                            if (std::next(beg) != end) {
+                                std::advance(beg, 1);
+                                if (beg->kind() == pt_kind::OPCODE and beg->v_opcode() == pt_opcode::REGISTER_X) {
+                                    if (std::next(beg) != end and std::next(beg)->kind() == pt_kind::RIGHT_PARENTHESIS) {
+                                        std::advance(beg, 1);
+                                        if (std::next(beg) == end) {
+                                            return parser_token::adr_mode::ABS_X_IND;
+                                        }
+                                    }
+                                }
+                            }
                         }
-
                     }
                 }
-
             }
             else if (beg->kind() == pt_kind::LABEL_CALL) {               // LABEL after (
-
-
+                std::advance(beg, 1);
+                if (beg != end) {
+                    if (beg->kind() == pt_kind::RIGHT_PARENTHESIS and std::next(beg) == end) {
+                        return adr_mode::ABS_IND;
+                    } else if (beg->kind() == pt_kind::COMMA) {
+                        if (std::next(beg) != end) {
+                            std::advance(beg, 1);
+                            if (beg->kind() == pt_kind::OPCODE and beg->v_opcode() == pt_opcode::REGISTER_X) {
+                                if (std::next(beg) != end and std::next(beg)->kind() == pt_kind::RIGHT_PARENTHESIS) {
+                                    std::advance(beg, 1);
+                                    if (std::next(beg) == end) {
+                                        return parser_token::adr_mode::ABS_X_IND;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
