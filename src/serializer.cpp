@@ -158,6 +158,8 @@ serialize()
                 case st_command::LSR_abx:
                 case st_command::LDX_aby:
 
+                case st_command::JMP_ind:
+                case st_command::JMP_iax:
                     code = static_cast<byte_t>(op.command());
                     write_byte_to_memory(code);
                     if (op.labelable()) {
@@ -246,10 +248,39 @@ serialize()
                 case st_command::INC_zpx:
                 case st_command::STX_zpy:
                 case st_command::LDX_zpy:
+
+                case st_command::ORA_izp:
+                case st_command::AND_izp:
+                case st_command::EOR_izp:
+                case st_command::ADC_izp:
+                case st_command::STA_izp:
+                case st_command::LDA_izp:
+                case st_command::CMP_izp:
+                case st_command::SBC_izp:
+
+                case st_command::ORA_izy:
+                case st_command::AND_izy:
+                case st_command::EOR_izy:
+                case st_command::ADC_izy:
+                case st_command::STA_izy:
+                case st_command::LDA_izy:
+                case st_command::CMP_izy:
+                case st_command::SBC_izy:
+
+                case st_command::ORA_izx:
+                case st_command::AND_izx:
+                case st_command::EOR_izx:
+                case st_command::ADC_izx:
+                case st_command::STA_izx:
+                case st_command::LDA_izx:
+                case st_command::CMP_izx:
+                case st_command::SBC_izx:
                     code = static_cast<byte_t>(op.command());
                     write_byte_to_memory(code);
                     write_byte_to_memory(op.number());
                     break;
+
+
 
                 case st_command::BBR0_zpr:
                 case st_command::BBR1_zpr:

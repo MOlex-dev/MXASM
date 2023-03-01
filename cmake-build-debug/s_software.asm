@@ -1,2 +1,2 @@
-asl A
-asl
+.define zpa $4a
+and (zpa, x)
