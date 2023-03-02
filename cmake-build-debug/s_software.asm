@@ -1,6 +1,8 @@
-LDA #$01
-STA $0200
-LDA #$05
-STA $0201
-LDA #$08
-STA $0202
+  LDX #$08
+decrement:
+  DEX
+  STX $0200
+  CPX #$03
+  BNE decrement
+  STX $0201
+  BRK

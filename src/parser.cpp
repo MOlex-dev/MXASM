@@ -413,9 +413,9 @@ validate_and_replace_labels()
     std::map<std::string, std::size_t> label_indexes;
 
     std::size_t label_id {0};
-    auto list_iter = m_parser_tokens.begin();
-    for (auto &line : m_parser_tokens) {
-        ++list_iter;
+    for (auto iter = m_parser_tokens.begin(); iter != m_parser_tokens.end(); ++iter) {
+        auto &line = *iter;
+
         if (line.begin()->kind() != pt_kind::LABEL_DECLARATION) continue;
 
         std::string label_name = to_lower(line.begin()->v_lexeme());
@@ -439,14 +439,15 @@ validate_and_replace_labels()
                 ti->v_opcode() == pt_opcode::REGISTER_A) {
                 add_exception("Error at [" + std::to_string(ti->row()) + ", "
                               + std::to_string(ti->column()) + "]: Expected NEW LINE, OPCODE, or DIRECTIVE, but " \
-                              "REGISTER NAME was found");
+                          "REGISTER NAME was found");
             }
         }
-        if (ti != line.end()) {
-            m_parser_tokens.insert(list_iter, {ti, line.end()});
+        if (ti != line.end()) {                                 // TODO POSSIBLE ERROR HERE!
+            m_parser_tokens.insert(std::next(iter), {ti, line.end()});
         }
         line.erase(ti, line.end());
     }
+
 
     for (auto &line : m_parser_tokens) {
         for (auto &token : line) {
